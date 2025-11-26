@@ -142,8 +142,9 @@ footer p{padding-bottom:30px}
 @media(max-width:480px){
   .categories-grid{grid-template-columns:1fr 1fr;gap:1rem}
   .category-card img{width:70px;height:70px;max-width:70px;} /* CLS Fix: Strict dimensions */
-  .category-card span{font-size:0.55rem}
+  .category-card span{font-size:0.5rem}
   .category-card .live-badge, .category-card .count-badge{top:8px;font-size:0.7rem;padding:3px 8px;}
   .category-card .live-badge{right:8px;}
   .category-card .count-badge{left:8px; max-width: 80px;}
 }
+
