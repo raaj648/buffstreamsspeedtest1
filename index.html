@@ -51,6 +51,14 @@
 
     /* STRICT CSS Placeholders (Min-Heights & Containment) */
     .discord-cta-container { width: 90%; max-width: 1400px; margin: 1.5rem auto 2rem; padding: 0 1rem; min-height: 84px; contain: layout style; }
+	  .discord-full-banner { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border: 1px solid #404eed; padding: 1rem 1.5rem; border-radius: 12px; color: var(--white); text-decoration: none; transition: box-shadow 0.2s ease; box-shadow: 0 4px 12px rgba(88,101,242,0.15); height: 100%; }
+	  .discord-full-banner:hover { box-shadow: 0 6px 16px rgba(88,101,242,0.4); background: #1c212b; text-decoration: none; }
+.discord-content { display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 1.1rem; }
+.discord-arrow { font-size: 1.5rem; color: #404eed; }
+
+/* Remove skeleton class when loaded */
+.discord-full-banner.loaded { background: var(--bg-secondary); }
+	  
     .search-and-schedule-container { display:flex; gap:1rem; align-items:center; margin:0 auto 3rem; padding:0 1rem; max-width:1400px; width:90%; min-height: 54px; contain: layout; }
     .categories-container { width: 90%; max-width: 1400px; margin: 2rem auto; padding: 1rem 0; min-height: 800px; contain: layout; }
     .categories-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; }
@@ -283,5 +291,6 @@
 </script>
 </body>
 </html>
+
 
 
