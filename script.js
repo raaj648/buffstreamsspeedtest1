@@ -1,20 +1,25 @@
-// --- [v7.1 - BUFFSTREAMS HOMEPAGE - DUAL API + DYNAMIC SPORT TIMING] ---
+// --- [v7.2 - OPTIMIZED BUFFSTREAMS HOMEPAGE] ---
 
 document.addEventListener("DOMContentLoaded", function() {
 
-    // --- 1. STICKY HEADER LOGIC ---
+    // --- 1. STICKY HEADER LOGIC (OPTIMIZED with IntersectionObserver) ---
+    // Replaces scroll event listener to fix Forced Reflow
     (function setupStickyHeader() {
         const header = document.querySelector(".main-header");
-        const triggerEl = document.querySelector(".categories-container") || document.querySelector(".search-and-schedule-container");
+        const sentinel = document.getElementById("header-sentinel");
         
-        if (!header || !triggerEl) return;
+        if (!header || !sentinel) return;
         
-        window.addEventListener("scroll", function() {
-            window.requestAnimationFrame(() => {
-                const triggerPoint = triggerEl.offsetTop;
-                header.classList.toggle("sticky", window.scrollY > triggerPoint);
-            });
-        }, { passive: true });
+        // Sticky trigger logic: When sentinel disappears off top, sticky active
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].boundingClientRect.y < 0) {
+                header.classList.add("sticky");
+            } else {
+                header.classList.remove("sticky");
+            }
+        }, { threshold: [0], rootMargin: "60px 0px 0px 0px" });
+
+        observer.observe(sentinel);
     })();
 
     // --- 2. MOBILE SIDEBAR MENU LOGIC ---
@@ -157,7 +162,6 @@ window.addEventListener('load', function() {
             { name: 'Other', href: '/Schedule/?sport=other', imgSrc: './Images/Other.webp', key: 'other' }
         ];
 
-        // Normalizer to map API categories to our keys
         const normalizeCategory = (cat) => {
             if (!cat) return 'other';
             cat = cat.toLowerCase().trim();
@@ -171,38 +175,21 @@ window.addEventListener('load', function() {
             return cat;
         };
 
-        // [NEW] DYNAMIC LIVE DURATIONS (Minutes)
-        // Adjust these values to define how long a match stays "Live" in the backup API
         const SPORT_DURATIONS = {
-            'football': 150,          // 2.5 hours (Standard + Extra time)
-            'basketball': 165,        // 2.75 hours (NBA games run long)
-            'american-football': 210, // 3.5 hours (NFL games are very long)
-            'baseball': 210,          // 3.5 hours (No clock, can run long)
-            'hockey': 160,            // 2 hours 40 mins
-            'fight': 300,             // 5 hours (UFC Main cards usually cover the whole event time)
-            'motor-sports': 180,      // 3 hours (F1 race time limit)
-            'tennis': 240,            // 4 hours (Grand slam matches vary wildy, 4h is safe buffer)
-            'cricket': 480,           // 8 hours (ODIs are long, T20s shorter, 8h covers most)
-            'golf': 480,              // 8 hours (Tournament days are long)
-            'rugby': 130,             // 2 hours 10 mins
-            'darts': 180,             // 3 hours
-            'billiards': 180,         // 3 hours
-            'afl': 180,               // 3 hours
-            'other': 180              // Default Fallback
+            'football': 150, 'basketball': 165, 'american-football': 210, 'baseball': 210,
+            'hockey': 160, 'fight': 300, 'motor-sports': 180, 'tennis': 240,
+            'cricket': 480, 'golf': 480, 'rugby': 130, 'darts': 180,
+            'billiards': 180, 'afl': 180, 'other': 180
         };
 
-        // --- BACKUP API: Fetch Match Counts ---
         async function fetchBackupCounts() {
             try {
-                // Using corsproxy.io to route the request
                 const proxyUrl = 'https://corsproxy.io/?';
                 const targetUrl = CONFIG.apiBackup;
                 const finalUrl = proxyUrl + encodeURIComponent(targetUrl);
-
                 const response = await fetch(finalUrl);
                 if (!response.ok) throw new Error('Backup API failed');
                 const data = await response.json();
-                
                 const now = Math.floor(Date.now() / 1000);
                 const counts = {};
 
@@ -210,15 +197,9 @@ window.addEventListener('load', function() {
                     for (const date in data.events) {
                         data.events[date].forEach(event => {
                             if (!event.sport) return;
-                            
                             const key = normalizeCategory(event.sport);
-                            
-                            // [UPDATED] Get specific duration for this sport, or default to 180
                             const durationMinutes = SPORT_DURATIONS[key] || 180;
-                            
                             const diffMinutes = (now - event.unix_timestamp) / 60;
-                            
-                            // Check against the specific sport duration
                             if (diffMinutes >= 0 && diffMinutes < durationMinutes) {
                                 counts[key] = (counts[key] || 0) + 1;
                             }
@@ -227,17 +208,14 @@ window.addEventListener('load', function() {
                 }
                 return counts;
             } catch (e) {
-                console.warn("Backup API (Counts) failed or CORS issue:", e);
                 return {};
             }
         }
 
-        // --- PRIMARY API: Fetch Viewers from Streamed.pk ---
         async function fetchPrimaryViewers() {
             const matchesRes = await fetch(`${CONFIG.apiPrimary}/matches/live`);
             if (!matchesRes.ok) throw new Error('Primary Matches API failed');
             const liveMatches = await matchesRes.json();
-            
             if (liveMatches.length === 0) return {};
 
             const streamPromises = liveMatches.flatMap(match =>
@@ -250,7 +228,6 @@ window.addEventListener('load', function() {
             );
 
             const results = await Promise.all(streamPromises);
-            
             const viewerCounts = {};
             results.forEach(item => {
                 const key = normalizeCategory(item.category);
@@ -264,27 +241,19 @@ window.addEventListener('load', function() {
             return viewerCounts;
         }
 
-        // --- Helper: Timeout Wrapper ---
         const fetchWithTimeout = (promise, ms) => {
             const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), ms));
             return Promise.race([promise, timeout]);
         };
 
-        // --- MAIN LOGIC ---
         let finalCategoryData = [...staticCategoryData];
         let backupCounts = {};
 
         try {
-            // 1. Fetch Backup (Matches) immediately
             const backupPromise = fetchBackupCounts();
-            
-            // 2. Fetch Primary (Viewers) with 4s timeout
             const primaryViewers = await fetchWithTimeout(fetchPrimaryViewers(), 4000);
-            
-            // 3. Wait for Backup
             backupCounts = await backupPromise;
 
-            // --- SUCCESS: Sort by VIEWERS ---
             finalCategoryData = finalCategoryData.map(cat => ({
                 ...cat,
                 viewers: primaryViewers[cat.key] || 0,
@@ -295,23 +264,17 @@ window.addEventListener('load', function() {
 
         } catch (error) {
             console.log("Primary API failed or timed out. Switching to Match Count sort.");
-            
-            // --- FAILOVER: Sort by MATCH COUNTS ---
             if (Object.keys(backupCounts).length === 0) {
                  backupCounts = await fetchBackupCounts();
             }
-
             finalCategoryData = finalCategoryData.map(cat => ({
                 ...cat,
                 viewers: 0,
                 matchCount: backupCounts[cat.key] || 0
             }));
-
-            // Sort by available live matches
             finalCategoryData.sort((a, b) => b.matchCount - a.matchCount);
         }
 
-        // --- RENDER ---
         const formatViewers = (num) => {
             if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
             return num;
@@ -328,6 +291,8 @@ window.addEventListener('load', function() {
             img.loading = 'lazy';
             img.width = 90;
             img.height = 90;
+            // Explicitly set these for CLS prevention
+            img.style.aspectRatio = "1/1"; 
             
             const span = document.createElement('span');
             span.textContent = category.name;
@@ -335,7 +300,6 @@ window.addEventListener('load', function() {
             card.appendChild(img);
             card.appendChild(span);
     
-            // Badge 1: Live Viewers (Red) - From Primary
             if (category.viewers > 0) {
                 const vBadge = document.createElement('div');
                 vBadge.className = 'live-badge';
@@ -345,7 +309,6 @@ window.addEventListener('load', function() {
                 setTimeout(() => vBadge.classList.add('visible'), 50);
             }
 
-            // Badge 2: Match Count (Blue) - From Backup
             if (category.matchCount > 0) {
                 const cBadge = document.createElement('div');
                 cBadge.className = 'count-badge';
@@ -357,14 +320,18 @@ window.addEventListener('load', function() {
             return card;
         };
 
-        categoriesGrid.innerHTML = '';
+        // Batch update to DOM using DocumentFragment for performance
+        const fragment = document.createDocumentFragment();
         finalCategoryData.forEach((category, index) => {
             const card = createCategoryCard(category);
             if (index < 4) { 
                 const img = card.querySelector('img');
                 if(img) { img.loading = 'eager'; img.fetchPriority = 'high'; }
             }
-            categoriesGrid.appendChild(card);
+            fragment.appendChild(card);
         });
+
+        categoriesGrid.innerHTML = '';
+        categoriesGrid.appendChild(fragment);
     })();
 });
