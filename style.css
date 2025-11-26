@@ -11,15 +11,16 @@ body a:hover{text-decoration:underline}
 main{display:block}
 
 /* Header Logic */
+/* Default state (Relative) */
 .main-header {
     position: relative;
     top: 0;
     width: 100%;
     z-index: 1001;
-    transition: background 0.3s ease;
 }
 
-/* Sticky State - Fixed with NO moving animation (Solves Layout Shift & Disappearing Issue) */
+/* Sticky State - PURE CSS TOGGLE (No Animations) */
+/* When JS adds .sticky, this applies immediately */
 .main-header.sticky {
     position: fixed;
     top: 0;
@@ -27,18 +28,19 @@ main{display:block}
     box-shadow: 0 4px 10px rgba(0,0,0,.6);
     border-bottom: none;
     background: rgba(13,17,23,0.98);
+    /* REMOVED: transform & animation properties */
 }
 
 /* Mobile Sidebar Styling */
 .mobile-nav-list { list-style: none; padding: 0; margin: 20px 0; }
 .mobile-nav-list li { margin-bottom: 5px; }
-.mobile-nav-list li a { display: block; padding: 12px 15px; color: var(--text-primary); text-decoration: none; border-radius: 8px; font-weight: 500; transition: 0.2s; }
-.mobile-nav-list li a:hover { background: var(--bg-secondary); color: var(--white); padding-left: 20px; }
+.mobile-nav-list li a { display: block; padding: 12px 15px; color: var(--text-primary); text-decoration: none; border-radius: 8px; font-weight: 500; transition: background 0.2s ease; }
+.mobile-nav-list li a:hover { background: var(--bg-secondary); color: var(--white); padding-left: 15px; /* Removed movement, just padding stays */ }
 .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
 .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color); }
 .sidebar-schedule-btn { display: block; width: 100%; text-align: center; background: var(--accent-primary); color: #fff; padding: 10px; border-radius: 8px; font-weight: 600; text-decoration: none; }
 
-/* Discord Banner - Fixed Placeholder Height */
+/* Discord Banner - STRICT Placeholder Height */
 .discord-cta-container { 
     width: 90%; 
     max-width: 1400px; 
@@ -47,15 +49,14 @@ main{display:block}
     min-height: 84px; /* Exact height reserved */
     contain: layout style;
 }
-.discord-full-banner { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border: 1px solid #404eed; padding: 1rem 1.5rem; border-radius: 12px; color: var(--white); text-decoration: none; transition: 0.2s ease; box-shadow: 0 4px 12px rgba(88,101,242,0.15); height: 100%; }
-/* Changed to Scale/Opacity to avoid layout shift */
-.discord-full-banner:hover { transform: scale(1.01); box-shadow: 0 6px 16px rgba(88,101,242,0.25); background: #1c212b; text-decoration: none; }
+.discord-full-banner { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border: 1px solid #404eed; padding: 1rem 1.5rem; border-radius: 12px; color: var(--white); text-decoration: none; transition: box-shadow 0.2s ease; box-shadow: 0 4px 12px rgba(88,101,242,0.15); height: 100%; }
+/* Removed Transform/Scale - only shadow changes */
+.discord-full-banner:hover { box-shadow: 0 6px 16px rgba(88,101,242,0.4); background: #1c212b; text-decoration: none; }
 .discord-content { display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 1.1rem; }
-.discord-arrow { font-size: 1.5rem; color: #404eed; transition: transform 0.2s; }
-.discord-full-banner:hover .discord-arrow { transform: translateX(5px); }
+.discord-arrow { font-size: 1.5rem; color: #404eed; }
 
-/* Remove skeleton animation once loaded */
-.discord-full-banner.loaded { background: var(--bg-secondary); animation: none; }
+/* Remove skeleton class when loaded */
+.discord-full-banner.loaded { background: var(--bg-secondary); }
 
 /* Footer Styles */
 footer{background:var(--bg-secondary);color:var(--text-secondary);padding:1rem;margin-top:2rem;text-align:center; content-visibility: auto;}
@@ -71,13 +72,14 @@ footer p{padding-bottom:30px}
 #sticky-ad-placeholder { display: none; height: 44px; }
 #sticky-ad-placeholder.active { display: block; }
 
+/* Fixed Footer Ad */
 #sticky-footer-ad{position:fixed;bottom:0;left:0;width:100%;background:#161b22;padding:10px;z-index:9999;font-family:Arial,sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;box-shadow:0 -3px 10px rgba(0,0,0,.4);overflow:hidden}
 .ad-content{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;justify-content:center;padding:0 20px}
-.emoji{font-size:24px;} /* Removed bounce animation */
+.emoji{font-size:24px;} /* REMOVED ANIMATION */
 .cta-text{font-size:16px;font-weight:700;white-space:nowrap;text-overflow:ellipsis}
-.download-btn{background:#111;color:#fff;padding:8px 20px;border-radius:25px;font-size:16px;font-weight:700;text-decoration:none;transition:.3s;}
-.download-btn:hover{background:#fff;color:#111;transform:scale(1.05);}
-#close-ad{position:absolute;top:3px;right:17px;font-size:14px;padding:5px;border-radius:50%;background:#333;color:#fff;cursor:pointer;box-shadow:0 0 5px rgba(0,0,0,.5);transition:.3s;}
+.download-btn{background:#111;color:#fff;padding:8px 20px;border-radius:25px;font-size:16px;font-weight:700;text-decoration:none;transition: background 0.2s;} /* Removed pulse */
+.download-btn:hover{background:#fff;color:#111;}
+#close-ad{position:absolute;top:3px;right:17px;font-size:14px;padding:5px;border-radius:50%;background:#333;color:#fff;cursor:pointer;box-shadow:0 0 5px rgba(0,0,0,.5);transition: background 0.3s;}
 #close-ad:hover{background:red}
 
 .amazon-btn { background: #00A8E1; color: white; }
@@ -95,8 +97,8 @@ footer p{padding-bottom:30px}
 /* ========================================================================= */
 .main-content-title{text-align:center;font-size:clamp(1.5rem,5vw,2.2rem);font-weight:700;color:var(--white);margin:3rem 0 2rem;padding:0 1rem;letter-spacing:.5px;text-shadow:1px 1px 4px rgba(0,0,0,.6)}
 
-.search-and-schedule-container{display:flex;gap:1rem;align-items:center;margin:0 auto 3rem auto;padding:0 1rem;max-width:1400px;width:90%; min-height: 52px; contain: layout; }
-.search-trigger{flex-grow:1;display:flex;align-items:center;gap:.75rem;background-color:var(--bg-secondary);padding:.8rem 1rem;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;transition:all .2s ease;color:var(--text-secondary); height: 100%;}
+.search-and-schedule-container{display:flex;gap:1rem;align-items:center;margin:0 auto 3rem auto;padding:0 1rem;max-width:1400px;width:90%; min-height: 54px; contain: layout; }
+.search-trigger{flex-grow:1;display:flex;align-items:center;gap:.75rem;background-color:var(--bg-secondary);padding:.8rem 1rem;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;transition:border-color .2s ease;color:var(--text-secondary); height: 100%;}
 .search-trigger:hover{border-color:var(--accent-primary)}
 .search-trigger svg{width:1em;height:1em;color:var(--accent-primary);fill:currentColor}
 .schedule-button{flex-shrink:0;padding:.8rem 1.5rem;background-color:var(--accent-primary);color:var(--white);font-weight:600;text-decoration:none;border-radius:8px;transition:background-color .2s ease;text-align:center; height: 100%; display: flex; align-items: center;}
@@ -121,12 +123,12 @@ footer p{padding-bottom:30px}
     color:var(--white);
     border:1px solid var(--border-color);
     box-shadow:0 4px 10px rgba(0,0,0,.4);
-    transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;
+    transition:box-shadow .3s ease,border-color .3s ease; /* Removed transform */
     /* Placeholder: Force Height */
     min-height: 250px;
 }
 
-.category-card:hover{transform:translateY(-5px);border-color:var(--accent-primary);box-shadow:0 12px 24px rgba(0,0,0,.6);text-decoration:none}
+.category-card:hover{border-color:var(--accent-primary);box-shadow:0 12px 24px rgba(0,0,0,.6);text-decoration:none;}
 .category-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;background:radial-gradient(circle at 50% 0%,rgba(58,134,255,.25),transparent 70%);opacity:0;transition:opacity .4s ease;z-index:1}
 .category-card:hover::before{opacity:1}
 
@@ -139,23 +141,22 @@ footer p{padding-bottom:30px}
     object-fit:contain;
     margin-bottom:1.5rem;
     filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));
-    transition:transform .3s ease;
+    transition: transform .2s ease;
     z-index:2
 }
+/* This is a scale, which usually doesn't cause CLS, but since you want 0 movement: */
+.category-card:hover img{transform: none;} 
 
-.category-card:hover img{transform:scale(1.05)}
 .category-card span{font-size:0.9rem;font-weight:600;display:block;color:var(--white);text-transform:uppercase;letter-spacing:1px;z-index:2;text-align:center}
 
 /* Badges */
-.category-card .live-badge {position: absolute;top: 12px;right: 12px;background-color: #e53935;color: var(--white);padding: 4px 10px;border-radius: 20px;font-size: 0.8rem;font-weight: 700;display: flex;align-items: center;gap: 8px;z-index: 3;box-shadow: 0 2px 5px rgba(0,0,0,0.3);border: 1px solid rgba(255, 255, 255, 0.2);opacity: 0;transform: scale(0.8);transition: opacity 0.4s ease, transform 0.4s ease;}
-.category-card .live-badge.visible {opacity: 1;transform: scale(1);}
-.category-card .live-badge::before {content: '';width: 8px;height: 8px;background-color: #fff;border-radius: 50%;animation: pulse-white 1.5s infinite;}
+.category-card .live-badge {position: absolute;top: 12px;right: 12px;background-color: #e53935;color: var(--white);padding: 4px 10px;border-radius: 20px;font-size: 0.8rem;font-weight: 700;display: flex;align-items: center;gap: 8px;z-index: 3;box-shadow: 0 2px 5px rgba(0,0,0,0.3);border: 1px solid rgba(255, 255, 255, 0.2);opacity: 0;transition: opacity 0.4s ease;}
+.category-card .live-badge.visible {opacity: 1;}
+.category-card .live-badge::before {content: '';width: 8px;height: 8px;background-color: #fff;border-radius: 50%;} /* Removed Pulse Animation */
 .category-card .live-badge .viewer-icon {width: 1.2em;height: 1.2em;opacity: 0.8;}
 
-.category-card .count-badge {position: absolute;top: 12px;left: 12px;background-color: var(--accent-primary);color: var(--white);padding: 4px 10px;border-radius: 20px;font-size: 0.8rem;font-weight: 700;display: flex;align-items: center;gap: 5px;z-index: 3;box-shadow: 0 2px 5px rgba(0,0,0,0.3);border: 1px solid rgba(255, 255, 255, 0.2);opacity: 0;transform: scale(0.8);transition: opacity 0.4s ease, transform 0.4s ease;}
-.category-card .count-badge.visible {opacity: 1;transform: scale(1);}
-
-@keyframes pulse-white {0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }70% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }}
+.category-card .count-badge {position: absolute;top: 12px;left: 12px;background-color: var(--accent-primary);color: var(--white);padding: 4px 10px;border-radius: 20px;font-size: 0.8rem;font-weight: 700;display: flex;align-items: center;gap: 5px;z-index: 3;box-shadow: 0 2px 5px rgba(0,0,0,0.3);border: 1px solid rgba(255, 255, 255, 0.2);opacity: 0;transition: opacity 0.4s ease;}
+.category-card .count-badge.visible {opacity: 1;}
 
 /* ========================================================================= */
 /* ===  3. ARTICLE & PARTNER STYLES  ======================================= */
@@ -164,8 +165,8 @@ footer p{padding-bottom:30px}
 .article-intro{text-align:center;margin-bottom:3rem;font-size:1.1rem;line-height:1.7}
 .article-intro strong{color:var(--text-primary)}
 .partners-menu { list-style: none; padding: 0; margin: 0 0 20px 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; }
-.partners-menu li a { font-family: var(--font-primary); color: var(--text-secondary); text-decoration: none; font-size: 15px; font-weight: 700; text-transform: uppercase; transition: color 0.2s ease, transform 0.2s ease; }
-.partners-menu li a:hover { color: #e50914; transform: translateY(-2px); }
+.partners-menu li a { font-family: var(--font-primary); color: var(--text-secondary); text-decoration: none; font-size: 15px; font-weight: 700; text-transform: uppercase; transition: color 0.2s ease; }
+.partners-menu li a:hover { color: #e50914; }
 
 @media(max-width:768px){
   .main-content-title{margin:1rem 0 2rem;font-size:1.4rem}
