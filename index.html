@@ -21,25 +21,25 @@
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0078ff">
 
-  <!-- Critical CSS + Skeleton/Placeholder Styles -->
+  <!-- Critical CSS & Placeholders -->
   <style>
     :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff}
     *,::after,::before{box-sizing:border-box}
     html{overflow-y:scroll}
     body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:var(--bg-primary);color:var(--text-primary);line-height:1.6}
     
-    /* Header Layout */
-    .main-header{background:rgba(13,17,23,.98);backdrop-filter:blur(10px);height:60px;display:flex;justify-content:center;border-bottom:1px solid var(--border-color);width:100%;z-index:1001;position:relative;transition: transform 0.2s ease;}
+    /* Header Structure */
+    .main-header{background:rgba(13,17,23,.98);backdrop-filter:blur(10px);height:60px;display:flex;justify-content:center;border-bottom:1px solid var(--border-color);width:100%;z-index:1001;position:relative;}
     .header-inner{width:90%;max-width:1400px;display:flex;justify-content:space-between;align-items:center;height:100%}
     .nav-left{display:flex;align-items:center;gap:15px}
     .nav-menu{list-style:none;display:flex;gap:5px;padding:0;margin:0}
     .nav-menu li a{color:var(--text-primary);text-decoration:none;font-weight:500;font-size:14px;padding:8px 12px;border-radius:6px}
     .brand-link{font-size:1.4rem;font-weight:900;color:var(--white);text-decoration:none}
     
-    /* Header Placeholder (Prevents Layout Shift when Sticky) */
-    #header-placeholder { height: 0; width: 100%; display: block; visibility: hidden; }
+    /* Header Placeholder (Hidden by default, shown via JS) */
+    #header-placeholder { height: 60px; width: 100%; display: none; }
 
-    /* Skeleton / Placeholder Utils */
+    /* Skeleton Loading Animation */
     .skeleton-loading { background: linear-gradient(90deg, var(--bg-secondary) 25%, #1f252e 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: skeleton-load 1.5s infinite; }
     @keyframes skeleton-load { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
@@ -48,11 +48,11 @@
     .mobile-toggle svg{width:24px;height:24px}
     .mobile-sidebar{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg-primary);border-right:1px solid var(--border-color);transform:translateX(-100%);z-index:2000;padding:20px;display:flex;flex-direction:column}
     .mobile-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);opacity:0;visibility:hidden;z-index:1999;backdrop-filter:blur(2px)}
-    
     @media (max-width:900px){.nav-menu{display:none}.mobile-toggle{display:block}}
 
     /* CSS Placeholders for Core Elements */
     .discord-cta-container { width: 90%; max-width: 1400px; margin: 1.5rem auto 2rem; padding: 0 1rem; min-height: 84px; contain: layout style; }
+    .search-and-schedule-container { display:flex; gap:1rem; align-items:center; margin:0 auto 3rem; padding:0 1rem; max-width:1400px; width:90%; min-height: 52px; contain: layout; }
     .categories-container { width: 90%; max-width: 1400px; margin: 2rem auto; padding: 1rem 0; min-height: 800px; contain: layout; }
     .categories-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; }
     .category-card { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2.5rem 1.5rem; background-color:var(--bg-secondary); border-radius:16px; border:1px solid var(--border-color); min-height: 250px; }
