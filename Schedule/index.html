@@ -20,6 +20,57 @@
   <!-- CSS Link -->
   <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="style.css"></noscript>
+
+  <!-- Critical CSS for Adsterra Section to prevent CLS -->
+  <style>
+    /* --- Adsterra Professional Container --- */
+    .adsterra-section {
+        width: 100%;
+        background: radial-gradient(circle at center, #161b22 0%, #0d1117 70%); /* Spotlight effect */
+        border-bottom: 1px solid var(--border-color);
+        padding: 25px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 310px; /* 250px ad + padding + label space */
+        contain: content; /* Browser optimization */
+        margin-bottom: 20px;
+    }
+    
+    .ad-label {
+        font-size: 11px;
+        color: #d4af37; /* Gold color for premium feel */
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .ad-label::before, .ad-label::after {
+        content: '';
+        display: block;
+        width: 20px;
+        height: 1px;
+        background: #d4af37;
+        opacity: 0.5;
+    }
+
+    .ad-frame {
+        width: 300px;
+        height: 250px;
+        position: relative;
+        background-color: #000; /* Placeholder black while loading */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Deep shadow to pop */
+        border: 1px solid #30363d;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+  </style>
 </head>
 <body>
 
@@ -94,12 +145,27 @@
 <div class="fullpage">
   <main>
     
-    <!-- Adsterra Container (300x250 Centered) - Above Title -->
-<div id="adsterra-top-container" class="adsterra-wrapper">
-    <!-- PASTE YOUR ADSTERRA SCRIPT CODE HERE -->
-    <img src="../test.jpg"/>
-    <!-- END ADSTERRA CODE -->
-</div>
+    <!-- Adsterra Container (300x250) - Professionally Styled -->
+    <!-- The surrounding DIVs prevent Layout Shift (CLS) and add a "Sponsored" look -->
+    <div class="adsterra-section">
+        <div class="ad-label">Sponsored Partner</div>
+        <div class="ad-frame">
+		<img src="../test.jpg"/>
+            <!-- PASTE YOUR ADSTERRA SCRIPT CODE HERE -->
+             <!-- Example: -->
+            <!-- <script type="text/javascript">
+                atOptions = {
+                    'key' : 'YOUR_KEY',
+                    'format' : 'iframe',
+                    'height' : 250,
+                    'width' : 300,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/YOUR_KEY/invoke.js"></script> -->
+            <!-- END ADSTERRA CODE -->
+        </div>
+    </div>
 
     <h1 id="category-title">Loading...</h1>
     
@@ -183,14 +249,14 @@
 <!-- Main Logic Script -->
 <script src="script.js" defer></script>
 
-<!-- Delayed Loader: Google Analytics Only (Adsterra is now native) -->
+<!-- Delayed Loader: Google Analytics Only -->
 <script>
   const GTAG_ID = 'G-XTE70X7LT6';
-  let adsLoaded = false;
+  let analyticsLoaded = false;
   
-  function initAdsAndAnalytics() {
-    if (adsLoaded) return;
-    adsLoaded = true;
+  function initAnalytics() {
+    if (analyticsLoaded) return;
+    analyticsLoaded = true;
     
     // 1. Load Google Analytics
     window.dataLayer = window.dataLayer || [];
@@ -203,19 +269,17 @@
     gaScript.async = true;
     document.head.appendChild(gaScript);
 
-    // REMOVED: window.injectAdsterraAd() call is gone.
-
-    // Remove Listeners
+    // Remove Listeners to prevent multiple fires
     ['scroll', 'mousemove', 'touchstart'].forEach(type => {
-      window.removeEventListener(type, initAdsAndAnalytics);
+      window.removeEventListener(type, initAnalytics);
     });
   }
 
   // Trigger on User Interaction OR 4-second delay
-  window.addEventListener('scroll', initAdsAndAnalytics, { once: true });
-  window.addEventListener('mousemove', initAdsAndAnalytics, { once: true });
-  window.addEventListener('touchstart', initAdsAndAnalytics, { once: true });
-  setTimeout(initAdsAndAnalytics, 4000);
+  window.addEventListener('scroll', initAnalytics, { once: true });
+  window.addEventListener('mousemove', initAnalytics, { once: true });
+  window.addEventListener('touchstart', initAnalytics, { once: true });
+  setTimeout(initAnalytics, 4000);
 
   // Close Sticky Ad Button Logic
   document.addEventListener('DOMContentLoaded', () => {
