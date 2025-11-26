@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading Match...</title>
+  
+  <link rel="preconnect" href="https://streamed.pk" crossorigin>
+  <link rel="preconnect" href="https://topembed.pw" crossorigin>
+  <link rel="preconnect" href="https://corsproxy.io" crossorigin>
+  <link rel="icon" href="../favicon.ico" type="image/x-icon">
+
+  <!-- CSS Loading -->
+  <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="style.css"></noscript>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XTE70X7LT6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XTE70X7LT6');
+  </script>
+</head>
+<body>
+
+<!-- Mobile Menu Overlay & Sidebar -->
+<div class="mobile-overlay" id="mobile-overlay"></div>
+<aside class="mobile-sidebar" id="mobile-sidebar">
+  <div class="sidebar-header">
+    <span style="font-weight: 800; font-size: 1.2rem; color: #fff;">Menu</span>
+    <button id="close-sidebar" style="background:none; border:none; color: #8b949e; cursor: pointer;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
+  <ul class="mobile-nav-list">
+    <li><a href="/">Home</a></li>
+    <li><a href="/Schedule/?popular=true" style="color: var(--accent-secondary);">Full Schedule</a></li>
+    <li><a href="/Schedule/?sport=football">Football</a></li>
+    <li><a href="/Schedule/?sport=basketball">Basketball</a></li>
+    <li><a href="/Schedule/?sport=american-football">NFL</a></li>
+    <li><a href="/Schedule/?sport=fight">UFC / MMA</a></li>
+    <li><a href="/Schedule/?sport=motor-sports">F1 / Motor</a></li>
+    <li><a href="/Schedule/?sport=baseball">MLB</a></li>
+    <li><a href="/Schedule/?sport=hockey">NHL</a></li>
+  </ul>
+</aside>
+
+<!-- Main Header -->
+<header class="main-header">
+  <!-- FIXED: Added 'content-container' class here so header width matches body width -->
+  <div class="content-container header-inner">
+    <div class="nav-left">
+      <button class="mobile-toggle" id="mobile-toggle" aria-label="Open Menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      
+      <ul class="nav-menu">
+        <li><a href="/">Home</a></li>
+        <li><a href="/Schedule/?popular=true" style="color: var(--accent-secondary);">Full Schedule</a></li>
+        <li><a href="/Schedule/?sport=american-football">NFL</a></li>
+        <li><a href="/Schedule/?sport=basketball">NBA</a></li>
+        <li><a href="/Schedule/?sport=baseball">MLB</a></li>
+        <li><a href="/Schedule/?sport=fight">UFC</a></li>
+        <li><a href="/Schedule/?sport=motor-sports">F1</a></li>
+      </ul>
+    </div>
+    <a href="https://buffstreams.world/" class="brand-link">Buffstreams</a>
+  </div>
+</header>
+
+<!-- Main Content -->
+<div class="fullpage">
+  <div class="content-wrapper-layout">
+    
+    <main class="match-details-container">
+      
+      <!-- Top Banner Advertisement -->
+      <a class="responsive-ad" href="https://www.villiersjets.com/?id=11429" rel="nofollow sponsored" target="_blank" aria-label="Villiers Private Jet Charter">
+        <img src="https://assets.villiersjets.com/banners/970X90-1.jpg" alt="Villiers Private Jet Charter">
+      </a>
+      <style>
+        .responsive-ad{display: block;max-width: 970px;width: 100%;margin: 10px auto;text-decoration: none;aspect-ratio: 970 / 90;overflow: hidden; background-color: #111;}
+        .responsive-ad img{width: 100%;height: 100%;object-fit: cover;display: block;border: 0;}
+      </style>
+
+      <!-- SKELETON LOADER FOR PAGE CONTENT -->
+      <div id="match-header">
+        <h1 id="match-title"><div class="skeleton"></div></h1>
+      </div>
+
+      <!-- Adsterra Banner Advertisement -->
+      <center>
+        <div style="margin: 15px 0;">
+        <script type="text/javascript">
+          atOptions = { 'key' : 'd1173322baca5eadaaa9df8755945d20', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/d1173322baca5eadaaa9df8755945d20/invoke.js"></script>
+        </div>
+      </center>
+      
+      <p id="match-description">
+        <span class="skeleton"></span>
+        <span class="skeleton w-60"></span>
+      </p>
+      
+      <div id="countdown-section" class="countdown hidden"></div>
+      
+      <section id="streams-section">
+        <div class="skeleton-header">
+          <div class="skeleton-button"></div>
+          <div class="skeleton-summary"></div>
+        </div>
+        
+        <div id="streams-container">
+            <!-- Skeleton for a stream source -->
+            <div class="stream-source is-loading">
+                <div class="source-header">
+                    <span class="source-name">&nbsp;</span>
+                    <span class="source-count">&nbsp;</span>
+                </div>
+                <small class="source-desc">&nbsp;</small>
+                <div class="stream-row"></div>
+                <div class="stream-row"></div>
+            </div>
+        </div>
+        
+        <button id="show-all-sources-btn" class="show-all-btn hidden"></button>
+      </section>
+    </main>
+
+    <!-- DISCORD WIDGET SIDEBAR -->
+    <aside class="discord-sidebar">
+      <div id="discord-widget-container">
+        <div class="discord-header">
+            <div class="header-text">
+                <h3>Join our <span>Discord!</span></h3>
+                <p><span id="discord-online-count">...</span> online members</p>
+            </div>
+            <a href="#" id="discord-join-button" class="discord-btn" target="_blank" rel="noopener noreferrer">Join Now</a>
+        </div>
+        <ul id="discord-members-list" class="members-list">
+            <li class="member-skeleton"><div class="avatar-skeleton"></div><div class="name-skeleton"></div></li>
+            <li class="member-skeleton"><div class="avatar-skeleton"></div><div class="name-skeleton"></div></li>
+            <li class="member-skeleton"><div class="avatar-skeleton"></div><div class="name-skeleton"></div></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="disclaimer-box">
+    <h3>Disclaimer</h3>
+    <p>
+      Buffstreams functions as a search engine. We do not host, archive, store, or distribute media files. 
+      All content is provided by non-affiliated third parties.
+    </p>
+  </div>
+  <ul class="footer-menu">
+    <li><a href="/">Home</a></li>
+    <li><a href="/Schedule/?popular=true">Schedule</a></li>
+    <li><a href="/About/">About</a></li>
+    <li><a href="/Terms/">Terms</a></li>
+    <li><a href="/Privacy/">Privacy</a></li>
+    <li><a href="/DMCA/">DMCA</a></li>
+    <li><a href="/Contact/">Contact</a></li>
+  </ul>
+  <p>© 2025 buffstreams.world. All rights reserved.</p>
+</footer>
+
+<!-- Sticky Ad Placeholder -->
+<div id="sticky-ad-placeholder">
+  <div id="sticky-footer-ad">
+    <!-- Mobile Content -->
+    <div class="ad-content mobile-ad">
+      <span class="emoji">📲</span>
+      <span class="cta-text">Get App!</span>
+      <a href="https://tinyurl.com/BuffstreamsApp" class="download-btn" rel="nofollow" target="_blank">⬇ Download</a>
+    </div>
+    <!-- Desktop Content -->
+    <div class="ad-content desktop-ad">
+      <span class="emoji">📺</span>
+      <span class="cta-text">Watch on Prime!</span>
+      <a href="https://amzn.to/YOUR_LINK_HERE" class="download-btn" rel="nofollow" target="_blank" style="background: #00A8E1; color: white;">Start Free Trial</a>
+    </div>
+    <span id="close-ad">&#10060;</span>
+  </div>
+</div>
+
+<script src="script.js" defer></script>
+</body>
+</html>
