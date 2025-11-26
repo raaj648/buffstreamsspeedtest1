@@ -1,35 +1,31 @@
-// --- [v7.3 - STICKY FIX & CLS OPTIMIZED] ---
+// --- [v7.4 - FINAL FIX: STICKY & CLS] ---
 
 document.addEventListener("DOMContentLoaded", function() {
 
-    // --- 1. STICKY HEADER LOGIC (FIXED: Placeholder Swap) ---
-    // Solves the issue of header covering content at the top
+    // --- 1. STICKY HEADER LOGIC (Simplified & Robust) ---
     (function setupStickyHeader() {
         const header = document.querySelector(".main-header");
         const placeholder = document.getElementById("header-placeholder");
         
         if (!header || !placeholder) return;
         
-        // Threshold: When user scrolls past 100px, trigger sticky
+        // Threshold: 100px scroll triggers sticky
         const THRESHOLD = 100;
 
+        // Use requestAnimationFrame for smooth scrolling check
         window.addEventListener("scroll", function() {
             window.requestAnimationFrame(() => {
                 if (window.scrollY > THRESHOLD) {
+                    // Enable Sticky
                     if (!header.classList.contains("sticky")) {
-                        // Activate Sticky
                         header.classList.add("sticky");
-                        // Show placeholder to fill the gap in DOM so content doesn't jump
-                        placeholder.style.height = "60px";
-                        placeholder.style.visibility = "visible";
+                        placeholder.style.display = "block"; // Fill the gap immediately
                     }
                 } else {
+                    // Disable Sticky
                     if (header.classList.contains("sticky")) {
-                        // Deactivate Sticky
                         header.classList.remove("sticky");
-                        // Hide placeholder
-                        placeholder.style.height = "0";
-                        placeholder.style.visibility = "hidden";
+                        placeholder.style.display = "none"; // Remove gap
                     }
                 }
             });
@@ -136,7 +132,7 @@ window.addEventListener('load', function() {
         }
     })();
 
-    // --- 6. DISCORD FETCHER (Updated with Placeholder Removal) ---
+    // --- 6. DISCORD FETCHER ---
     (function fetchDiscordInvite() {
         const apiUrl = `https://discord.com/api/guilds/${CONFIG.discordServerId}/widget.json`;
         const discordButton = document.getElementById("discord-join-link");
