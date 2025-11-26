@@ -21,12 +21,44 @@
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0078ff">
 
-  <!-- Critical CSS (Inlined for Speed & CLS Fix) -->
+  <!-- Critical CSS + Skeleton/Placeholder Styles -->
   <style>
-    :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff}.main-header{background:rgba(13,17,23,.95);backdrop-filter:blur(8px);height:60px;display:flex;justify-content:center;border-bottom:1px solid var(--border-color);position:relative;z-index:1001;width:100%;top:0}.header-inner{width:90%;max-width:1400px;display:flex;justify-content:space-between;align-items:center;height:100%}.nav-left{display:flex;align-items:center;gap:15px}.nav-menu{list-style:none;display:flex;gap:5px;padding:0;margin:0}.nav-menu li a{color:var(--text-primary);text-decoration:none;font-weight:500;font-size:14px;padding:8px 12px;border-radius:6px}.brand-link{font-size:1.4rem;font-weight:900;color:var(--white);text-decoration:none;letter-spacing:-.5px}.mobile-toggle{display:none;background:0 0;border:none;color:var(--white);padding:5px}.mobile-toggle svg{width:24px;height:24px}.mobile-sidebar{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg-primary);border-right:1px solid var(--border-color);transform:translateX(-100%);z-index:2000;padding:20px;display:flex;flex-direction:column}.mobile-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);opacity:0;visibility:hidden;z-index:1999;backdrop-filter:blur(2px)}@media (max-width:900px){.nav-menu{display:none}.mobile-toggle{display:block}}*,::after,::before{box-sizing:border-box}html{overflow-y:scroll}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:var(--bg-primary);color:var(--text-primary);line-height:1.6}body a{color:var(--accent-primary);text-decoration:none}main{display:block}.mobile-nav-list{list-style:none;padding:0;margin:20px 0}.mobile-nav-list li{margin-bottom:5px}.mobile-nav-list li a{display:block;padding:12px 15px;color:var(--text-primary);text-decoration:none;border-radius:8px;font-weight:500}.sidebar-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--border-color)}.sidebar-footer{margin-top:auto;padding-top:20px;border-top:1px solid var(--border-color)}.sidebar-schedule-btn{display:block;width:100%;text-align:center;background:var(--accent-primary);color:#fff;padding:10px;border-radius:8px;font-weight:600;text-decoration:none}.discord-cta-container{width:90%;max-width:1400px;margin:1.5rem auto 2rem;padding:0 1rem}.discord-full-banner{display:flex;align-items:center;justify-content:space-between;background:var(--bg-secondary);border:1px solid #404eed;padding:1rem 1.5rem;border-radius:12px;color:var(--white);text-decoration:none;box-shadow:0 4px 12px rgba(88,101,242,.15)}.discord-content{display:flex;align-items:center;gap:15px;font-weight:600;font-size:1.1rem}.discord-arrow{font-size:1.5rem;color:#404eed}#sticky-ad-placeholder{display:none;height:44px}.search-and-schedule-container{display:flex;gap:1rem;align-items:center;margin:0 auto 3rem;padding:0 1rem;max-width:1400px;width:90%}.search-trigger{flex-grow:1;display:flex;align-items:center;gap:.75rem;background-color:var(--bg-secondary);padding:.8rem 1rem;border-radius:8px;border:1px solid var(--border-color);color:var(--text-secondary)}.search-trigger svg{width:1em;height:1em;color:var(--accent-primary);fill:currentColor}.schedule-button{flex-shrink:0;padding:.8rem 1.5rem;background-color:var(--accent-primary);color:var(--white);font-weight:600;text-decoration:none;border-radius:8px;text-align:center}.categories-container{width:90%;max-width:1400px;margin:2rem auto;padding:1rem 0}.categories-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem}.category-card{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;background-color:var(--bg-secondary);border-radius:16px;text-decoration:none;color:var(--white);border:1px solid var(--border-color);box-shadow:0 4px 10px rgba(0,0,0,.4)}.category-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;background:radial-gradient(circle at 50% 0,rgba(58,134,255,.25),transparent 70%);opacity:0;z-index:1}.category-card img{width:90px;height:90px;object-fit:contain;margin-bottom:1.5rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));z-index:2}.category-card span{font-size:.9rem;font-weight:600;display:block;color:var(--white);text-transform:uppercase;letter-spacing:1px;z-index:2;text-align:center}@media (max-width:768px){.categories-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem}.category-card{padding:2rem 1rem}.search-and-schedule-container{flex-direction:column;align-items:stretch}.discord-full-banner{padding:.8rem 1rem}.discord-content{font-size:.95rem}}@media (max-width:480px){.categories-grid{grid-template-columns:1fr 1fr;gap:1rem}.category-card img{max-width:70px;height:70px}.category-card span{font-size:.55rem}}
+    :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff}
+    *,::after,::before{box-sizing:border-box}
+    html{overflow-y:scroll}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:var(--bg-primary);color:var(--text-primary);line-height:1.6}
+    
+    /* Header Layout */
+    .main-header{background:rgba(13,17,23,.98);backdrop-filter:blur(10px);height:60px;display:flex;justify-content:center;border-bottom:1px solid var(--border-color);width:100%;z-index:1001;position:relative;transition: transform 0.2s ease;}
+    .header-inner{width:90%;max-width:1400px;display:flex;justify-content:space-between;align-items:center;height:100%}
+    .nav-left{display:flex;align-items:center;gap:15px}
+    .nav-menu{list-style:none;display:flex;gap:5px;padding:0;margin:0}
+    .nav-menu li a{color:var(--text-primary);text-decoration:none;font-weight:500;font-size:14px;padding:8px 12px;border-radius:6px}
+    .brand-link{font-size:1.4rem;font-weight:900;color:var(--white);text-decoration:none}
+    
+    /* Header Placeholder (Prevents Layout Shift when Sticky) */
+    #header-placeholder { height: 0; width: 100%; display: block; visibility: hidden; }
+
+    /* Skeleton / Placeholder Utils */
+    .skeleton-loading { background: linear-gradient(90deg, var(--bg-secondary) 25%, #1f252e 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: skeleton-load 1.5s infinite; }
+    @keyframes skeleton-load { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Mobile */
+    .mobile-toggle{display:none;background:0 0;border:none;color:var(--white);padding:5px}
+    .mobile-toggle svg{width:24px;height:24px}
+    .mobile-sidebar{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg-primary);border-right:1px solid var(--border-color);transform:translateX(-100%);z-index:2000;padding:20px;display:flex;flex-direction:column}
+    .mobile-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);opacity:0;visibility:hidden;z-index:1999;backdrop-filter:blur(2px)}
+    
+    @media (max-width:900px){.nav-menu{display:none}.mobile-toggle{display:block}}
+
+    /* CSS Placeholders for Core Elements */
+    .discord-cta-container { width: 90%; max-width: 1400px; margin: 1.5rem auto 2rem; padding: 0 1rem; min-height: 84px; contain: layout style; }
+    .categories-container { width: 90%; max-width: 1400px; margin: 2rem auto; padding: 1rem 0; min-height: 800px; contain: layout; }
+    .categories-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; }
+    .category-card { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2.5rem 1.5rem; background-color:var(--bg-secondary); border-radius:16px; border:1px solid var(--border-color); min-height: 250px; }
+    .category-card img { width:90px; height:90px; aspect-ratio: 1/1; object-fit:contain; margin-bottom:1.5rem; }
   </style>
 
-  <!-- Load Main CSS Asynchronously -->
   <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="style.css"></noscript>
   
@@ -64,13 +96,12 @@
   </div>
 </aside>
 
-<!-- Sentinel for Sticky Header (Performance Fix) -->
-<div id="header-sentinel" style="position: absolute; top: 0; height: 1px; width: 100%; pointer-events: none;"></div>
+<!-- Header Placeholder (Prevents content jump when header becomes sticky) -->
+<div id="header-placeholder"></div>
 
 <!-- Main Header -->
-<header class="main-header">
+<header class="main-header" id="main-header">
   <div class="header-inner">
-    <!-- Left: Hamburger (Mobile) & Menu (Desktop) -->
     <div class="nav-left">
       <button class="mobile-toggle" id="mobile-toggle" aria-label="Open Menu">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
@@ -86,16 +117,16 @@
       </ul>
     </div>
 
-    <!-- Right: Brand Text Link -->
     <a href="https://buffstreams.world/" class="brand-link" title="Buffstreams Home">Buffstreams</a>
   </div>
 </header>
 
 <main>
-  <!-- Discord Banner -->
+  <!-- Discord Banner with Skeleton Placeholder -->
   <div class="discord-cta-container">
-    <a id="discord-join-link" href="#" target="_blank" rel="noopener noreferrer" class="discord-full-banner">
+    <a id="discord-join-link" href="#" target="_blank" rel="noopener noreferrer" class="discord-full-banner skeleton-loading">
       <div class="discord-content">
+        <!-- SVG will load here, size reserved via CSS -->
         <svg width="24" height="24" viewBox="0 0 127 96" fill="#fff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22c1.24-18.87-3.6-43.05-18.9-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
         <span>Join the Official Community on Discord</span>
       </div>
@@ -115,7 +146,7 @@
   <!-- Categories -->
   <section class="categories-container">
     <div class="categories-grid">
-       <!-- Added explicit width/height to CSS to match these attributes for CLS fix -->
+       <!-- Explicit Width/Height + loading=eager for LCP Elements -->
        <a href="/Schedule/?sport=basketball" class="category-card"><img src="./Images/Basketball.webp" alt="Basketball Logo" fetchpriority="high" width="90" height="90" decoding="async"><span>Basketball</span></a>
        <a href="/Schedule/?sport=football" class="category-card"><img src="./Images/Football.webp" alt="Football Logo" fetchpriority="high" width="90" height="90" decoding="async"><span>Football</span></a>
        <a href="/Schedule/?sport=american-football" class="category-card"><img src="./Images/American-football.webp" alt="American Football Logo" fetchpriority="high" width="90" height="90" decoding="async"><span>American Football</span></a>
@@ -240,7 +271,6 @@
       window.removeEventListener(type, loadGtag);
     });
   }
-  // Delayed loading for performance
   window.addEventListener('scroll', loadGtag, { once: true });
   window.addEventListener('mousemove', loadGtag, { once: true });
   window.addEventListener('touchstart', loadGtag, { once: true });
