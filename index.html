@@ -15,6 +15,9 @@
   <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
   <link rel="preconnect" href="https://streamed.pk" crossorigin>
   <link rel="preconnect" href="https://topembed.pw" crossorigin>
+  <!-- Preconnect to API endpoints for faster ad loading -->
+  <link rel="preconnect" href="https://get.geojs.io" crossorigin>
+  <link rel="preconnect" href="https://api.country.is" crossorigin>
 
   <link rel="canonical" href="https://buffstreams.world/">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -23,7 +26,74 @@
 
   <!-- Critical CSS & Layout Stability Styles -->
   <style>
-    :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff}.main-header{background:rgba(13,17,23,.98);backdrop-filter:blur(10px);height:60px;display:flex;justify-content:center;border-bottom:1px solid var(--border-color);width:100%;z-index:1001;position:relative}.header-inner{width:90%;max-width:1400px;display:flex;justify-content:space-between;align-items:center;height:100%}.nav-left{display:flex;align-items:center;gap:15px}.nav-menu{list-style:none;display:flex;gap:5px;padding:0;margin:0}.nav-menu li a{color:var(--text-primary);text-decoration:none;font-weight:500;font-size:14px;padding:8px 12px;border-radius:6px}.brand-link{font-size:1.4rem;font-weight:900;color:var(--white);text-decoration:none}#header-placeholder{height:60px;width:100%;display:none;visibility:hidden}.skeleton-loading{background-color:var(--bg-secondary)}.mobile-toggle{display:none;background:0 0;border:none;color:var(--white);padding:5px}.mobile-toggle svg{width:24px;height:24px}.mobile-sidebar{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg-primary);border-right:1px solid var(--border-color);transform:translateX(-100%);z-index:2000;padding:20px;display:flex;flex-direction:column}.mobile-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);opacity:0;visibility:hidden;z-index:1999;backdrop-filter:blur(2px)}@media (max-width:900px){.nav-menu{display:none}.mobile-toggle{display:block}}.categories-container{width:90%;max-width:1400px;margin:2rem auto;padding:1rem 0;min-height:800px;contain:layout}.category-card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;background-color:var(--bg-secondary);border-radius:16px;border:1px solid var(--border-color);min-height:250px}.category-card img{width:90px;height:90px;aspect-ratio:1/1;object-fit:contain;margin-bottom:1.5rem}*,::after,::before{box-sizing:border-box}:root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff;--discord-color:#5865F2}html{overflow-y:scroll}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:var(--bg-primary);color:var(--text-primary);line-height:1.6}body a{color:var(--accent-primary);text-decoration:none}main{display:block}.main-header{position:relative;top:0;width:100%;z-index:1001}.mobile-nav-list{list-style:none;padding:0;margin:20px 0}.mobile-nav-list li{margin-bottom:5px}.mobile-nav-list li a{display:block;padding:12px 15px;color:var(--text-primary);text-decoration:none;border-radius:8px;font-weight:500}.sidebar-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--border-color)}.sidebar-footer{margin-top:auto;padding-top:20px;border-top:1px solid var(--border-color)}.sidebar-schedule-btn{display:block;width:100%;text-align:center;background:var(--accent-primary);color:#fff;padding:10px;border-radius:8px;font-weight:600;text-decoration:none}.discord-cta-container{width:90%;max-width:1400px;margin:1.5rem auto 2rem;padding:0 1rem;min-height:84px;contain:layout style}.discord-full-banner{display:flex;align-items:center;justify-content:space-between;background:var(--bg-secondary);border:1px solid #404eed;padding:1rem 1.5rem;border-radius:12px;color:var(--white);text-decoration:none;box-shadow:0 4px 12px rgba(88,101,242,.15);height:100%}.discord-content{display:flex;align-items:center;gap:15px;font-weight:600;font-size:1.1rem}.discord-arrow{font-size:1.5rem;color:#404eed}#sticky-ad-placeholder{display:none;height:44px}.search-and-schedule-container{display:flex;gap:1rem;align-items:center;margin:0 auto 3rem;padding:0 1rem;max-width:1400px;width:90%;min-height:54px;contain:layout}.search-trigger{flex-grow:1;display:flex;align-items:center;gap:.75rem;background-color:var(--bg-secondary);padding:.8rem 1rem;border-radius:8px;border:1px solid var(--border-color);color:var(--text-secondary);height:100%}.search-trigger svg{width:1em;height:1em;color:var(--accent-primary);fill:currentColor}.schedule-button{flex-shrink:0;padding:.8rem 1.5rem;background-color:var(--accent-primary);color:var(--white);font-weight:600;text-decoration:none;border-radius:8px;text-align:center;height:100%;display:flex;align-items:center}.categories-container{width:90%;max-width:1400px;margin:2rem auto;padding:1rem 0;content-visibility:auto;min-height:800px}.categories-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem}.category-card{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;background-color:var(--bg-secondary);border-radius:16px;text-decoration:none;color:var(--white);border:1px solid var(--border-color);box-shadow:0 4px 10px rgba(0,0,0,.4);min-height:250px}.category-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;background:radial-gradient(circle at 50% 0,rgba(58,134,255,.25),transparent 70%);opacity:0;z-index:1}.category-card img{width:90px;height:90px;aspect-ratio:1/1;object-fit:contain;margin-bottom:1.5rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));z-index:2}.category-card span{font-size:.9rem;font-weight:600;display:block;color:var(--white);text-transform:uppercase;letter-spacing:1px;z-index:2;text-align:center}@media (max-width:768px){.categories-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem}.category-card{padding:2rem 1rem;min-height:200px}.search-and-schedule-container{flex-direction:column;align-items:stretch}.discord-full-banner{padding:.8rem 1rem}.discord-content{font-size:.95rem}}@media (max-width:480px){.categories-grid{grid-template-columns:1fr 1fr;gap:1rem}.category-card img{width:70px;height:70px;max-width:70px}.category-card span{font-size:.55rem}}
+    :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff}.main-header{background:rgba(13,17,23,.98);backdrop-filter:blur(10px);height:60px;display:flex;justify-content:center;border-bottom:1px solid var(--border-color);width:100%;z-index:1001;position:relative}.header-inner{width:90%;max-width:1400px;display:flex;justify-content:space-between;align-items:center;height:100%}.nav-left{display:flex;align-items:center;gap:15px}.nav-menu{list-style:none;display:flex;gap:5px;padding:0;margin:0}.nav-menu li a{color:var(--text-primary);text-decoration:none;font-weight:500;font-size:14px;padding:8px 12px;border-radius:6px}.brand-link{font-size:1.4rem;font-weight:900;color:var(--accent-primary);text-decoration:underline;}.brand-link:hover{color:var(--text-primary);}#header-placeholder{height:60px;width:100%;display:none;visibility:hidden}.skeleton-loading{background-color:var(--bg-secondary)}.mobile-toggle{display:none;background:0 0;border:none;color:var(--white);padding:5px}.mobile-toggle svg{width:24px;height:24px}.mobile-sidebar{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg-primary);border-right:1px solid var(--border-color);transform:translateX(-100%);z-index:2000;padding:20px;display:flex;flex-direction:column}.mobile-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);opacity:0;visibility:hidden;z-index:1999;backdrop-filter:blur(2px)}@media (max-width:900px){.nav-menu{display:none}.mobile-toggle{display:block}}.categories-container{width:90%;max-width:1400px;margin:2rem auto;padding:1rem 0;min-height:800px;contain:layout}.category-card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;background-color:var(--bg-secondary);border-radius:16px;border:1px solid var(--border-color);min-height:250px}.category-card img{width:90px;height:90px;aspect-ratio:1/1;object-fit:contain;margin-bottom:1.5rem}*,::after,::before{box-sizing:border-box}:root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff;--discord-color:#5865F2}html{overflow-y:scroll}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:var(--bg-primary);color:var(--text-primary);line-height:1.6}body a{color:var(--accent-primary);text-decoration:none}main{display:block}.main-header{position:relative;top:0;width:100%;z-index:1001}.mobile-nav-list{list-style:none;padding:0;margin:20px 0}.mobile-nav-list li{margin-bottom:5px}.mobile-nav-list li a{display:block;padding:12px 15px;color:var(--text-primary);text-decoration:none;border-radius:8px;font-weight:500}.sidebar-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--border-color)}.sidebar-footer{margin-top:auto;padding-top:20px;border-top:1px solid var(--border-color)}.sidebar-schedule-btn{display:block;width:100%;text-align:center;background:var(--accent-primary);color:#fff;padding:10px;border-radius:8px;font-weight:600;text-decoration:none}.discord-cta-container{width:90%;max-width:1400px;margin:1.5rem auto 1.5rem;padding:0 1rem;min-height:84px;contain:layout style}.discord-full-banner{display:flex;align-items:center;justify-content:space-between;background:var(--bg-secondary);border:1px solid #404eed;padding:1rem 1.5rem;border-radius:12px;color:var(--white);text-decoration:none;box-shadow:0 4px 12px rgba(88,101,242,.15);height:100%}.discord-content{display:flex;align-items:center;gap:15px;font-weight:600;font-size:1.1rem}.discord-arrow{font-size:1.5rem;color:#404eed}#sticky-ad-placeholder{display:none;height:44px}.search-and-schedule-container{display:flex;gap:1rem;align-items:center;margin:0 auto 3rem;padding:0 1rem;max-width:1400px;width:90%;min-height:54px;contain:layout}.search-trigger{flex-grow:1;display:flex;align-items:center;gap:.75rem;background-color:var(--bg-secondary);padding:.8rem 1rem;border-radius:8px;border:1px solid var(--border-color);color:var(--text-secondary);height:100%}.search-trigger svg{width:1em;height:1em;color:var(--accent-primary);fill:currentColor}.schedule-button{flex-shrink:0;padding:.8rem 1.5rem;background-color:var(--accent-primary);color:var(--white);font-weight:600;text-decoration:none;border-radius:8px;text-align:center;height:100%;display:flex;align-items:center}.categories-container{width:90%;max-width:1400px;margin:2rem auto;padding:1rem 0;content-visibility:auto;min-height:800px}.categories-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem}.category-card{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;background-color:var(--bg-secondary);border-radius:16px;text-decoration:none;color:var(--white);border:1px solid var(--border-color);box-shadow:0 4px 10px rgba(0,0,0,.4);min-height:250px}.category-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;background:radial-gradient(circle at 50% 0,rgba(58,134,255,.25),transparent 70%);opacity:0;z-index:1}.category-card img{width:90px;height:90px;aspect-ratio:1/1;object-fit:contain;margin-bottom:1.5rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));z-index:2}.category-card span{font-size:.9rem;font-weight:600;display:block;color:var(--white);text-transform:uppercase;letter-spacing:1px;z-index:2;text-align:center}@media (max-width:768px){.categories-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem}.category-card{padding:2rem 1rem;min-height:200px}.search-and-schedule-container{flex-direction:column;align-items:stretch}.discord-full-banner{padding:.8rem 1rem}.discord-content{font-size:.95rem}}@media (max-width:480px){.categories-grid{grid-template-columns:1fr 1fr;gap:1rem}.category-card img{width:70px;height:70px;max-width:70px}.category-card span{font-size:.55rem}}
+
+    /* --- Affiliate Offer Styles (Professional Betting/Casino Theme) --- */
+    .affiliate-wrapper {
+      width: 90%;
+      max-width: 1400px;
+      margin: 0 auto 1.5rem; /* Positioned: Below Discord, Above Search */
+      padding: 0 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* Min-height prevents CLS (Layout Shift) while API loads */
+      min-height: 290px; 
+      contain: layout;
+    }
+    .affiliate-card {
+      background: linear-gradient(145deg, #1c232e, #11151c);
+      border: 1px solid #d4af37; /* Gold border for trust & premium feel */
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 10px rgba(212, 175, 55, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+      position: relative;
+      max-width: 100%;
+    }
+    .affiliate-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.2);
+    }
+    .aff-image {
+      width: 300px;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 6px;
+      display: block;
+      background-color: var(--bg-secondary); /* Placeholder while loading */
+    }
+    /* Smart CTA Button styling */
+    .aff-cta-btn {
+      margin-top: 12px;
+      background: linear-gradient(90deg, #d4af37, #f2d06b);
+      color: #0d1117;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 10px 24px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      text-align: center;
+      width: 100%;
+      max-width: 300px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .aff-cta-btn span {
+      position: relative;
+      z-index: 2;
+    }
+    @media (max-width: 400px) {
+      .aff-image {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 300/250;
+      }
+    }
   </style>
 
   <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -63,7 +133,7 @@
   </div>
 </aside>
 
-<!-- Header Placeholder (Invisible div that takes up space when header becomes sticky) -->
+<!-- Header Placeholder -->
 <div id="header-placeholder"></div>
 
 <!-- Main Header -->
@@ -89,16 +159,20 @@
 </header>
 
 <main>
-  <!-- Discord Banner with Skeleton Placeholder -->
+  <!-- Discord Banner -->
   <div class="discord-cta-container">
     <a id="discord-join-link" href="#" target="_blank" rel="noopener noreferrer" class="discord-full-banner skeleton-loading">
       <div class="discord-content">
-        <!-- SVG will load here, size reserved via CSS -->
         <svg width="24" height="24" viewBox="0 0 127 96" fill="#fff"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22c1.24-18.87-3.6-43.05-18.9-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
         <span>Join Discord Community!</span>
       </div>
       <span class="discord-arrow">&rarr;</span>
     </a>
+  </div>
+
+  <!-- Dynamic Geo-Targeted Affiliate Section -->
+  <div id="dynamic-offer-container" class="affiliate-wrapper">
+    <!-- Content injected via Script below -->
   </div>
 
   <!-- Search & Schedule -->
@@ -113,7 +187,6 @@
   <!-- Categories -->
   <section class="categories-container">
     <div class="categories-grid">
-       <!-- Images have explicit width/height and fetchpriority to stabilize LCP -->
        <a href="/Schedule/?sport=basketball" class="category-card"><img src="./Images/Basketball.webp" alt="Basketball Logo" fetchpriority="high" width="90" height="90" decoding="async"><span>Basketball</span></a>
        <a href="/Schedule/?sport=football" class="category-card"><img src="./Images/Football.webp" alt="Football Logo" fetchpriority="high" width="90" height="90" decoding="async"><span>Football</span></a>
        <a href="/Schedule/?sport=american-football" class="category-card"><img src="./Images/American-football.webp" alt="American Football Logo" fetchpriority="high" width="90" height="90" decoding="async"><span>American Football</span></a>
@@ -206,7 +279,7 @@
   <p>© 2025 buffstreams.world. All rights reserved.</p>
 </footer>
 
-<!-- Sticky Ad Container - Content populated by Script.js -->
+<!-- Sticky Ad Container -->
 <div id="sticky-ad-placeholder"></div>
 
 <script src="script.js" defer></script>
@@ -220,24 +293,149 @@
   }
 </script>
 
+<!-- Dynamic Affiliate Offer Script (Triple Logic: Specific > Global > Technical Fallback) -->
+<script>
+  (function() {
+    // =================================================================
+    // 1. CONFIGURATION
+    // =================================================================
+    
+    // LISTED COUNTRIES (Tier 1)
+    const specificOffers = {
+      'US': { 
+        img: 'YOUR_USA_IMAGE_URL_HERE.jpg', 
+        link: 'YOUR_USA_AFFILIATE_LINK_HERE',
+        cta: 'Claim $500 Bonus' 
+      },
+      'GB': { 
+        img: 'YOUR_UK_IMAGE_URL_HERE.jpg', 
+        link: 'YOUR_UK_AFFILIATE_LINK_HERE',
+        cta: 'Bet £10 Get £30' 
+      },
+      'CA': { 
+        img: 'YOUR_CANADA_IMAGE_URL_HERE.jpg', 
+        link: 'YOUR_CANADA_AFFILIATE_LINK_HERE',
+        cta: 'Get $200 Free Bet' 
+      },
+      'GR': { 
+        img: 'YOUR_CANADA_IMAGE_URL_HERE.jpg', // Using Canada Image
+        link: 'YOUR_GREECE_AFFILIATE_LINK_HERE',
+        cta: 'Claim Bonus Now' 
+      }
+    };
+
+    // GLOBAL OFFER (Tier 2)
+    // Shown to countries NOT in the list above (e.g. France, Japan)
+    const globalOffer = {
+      img: 'test.jpg', 
+      link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE',
+      cta: 'Join & Win Big' 
+    };
+
+    // TECHNICAL FALLBACK (Tier 3)
+    // Shown if API fails, is blocked, or user is offline
+    const technicalFallbackOffer = {
+      img: 'YOUR_FALLBACK_IMAGE_URL_HERE.jpg', 
+      link: 'YOUR_FALLBACK_AFFILIATE_LINK_HERE',
+      cta: 'Play Now' 
+    };
+
+    const container = document.getElementById('dynamic-offer-container');
+
+    // =================================================================
+    // 2. RENDER FUNCTION
+    // =================================================================
+    function renderOffer(data) {
+      if (!container) return;
+      
+      const html = `
+        <a href="${data.link}" target="_blank" rel="nofollow noopener" class="affiliate-card" aria-label="Exclusive Betting Offer">
+          <img src="${data.img}" alt="Sports Bonus" class="aff-image" width="300" height="250" loading="eager">
+          <div class="aff-cta-btn">
+             <span>${data.cta}</span>
+          </div>
+        </a>
+      `;
+      container.innerHTML = html;
+    }
+
+    // =================================================================
+    // 3. ROBUST GEO-DETECTION LOGIC
+    // =================================================================
+    async function initAdStrategy() {
+      let detectedCountry = null;
+
+      try {
+        // --- Method 1: GeoJS (Primary) ---
+        // Timestamp prevents caching
+        const res = await fetch('https://get.geojs.io/v1/ip/country.json?_=' + new Date().getTime());
+        if (!res.ok) throw new Error('GeoJS failed');
+        const data = await res.json();
+        if (data.country) detectedCountry = data.country.toUpperCase();
+
+      } catch (primaryError) {
+        // console.warn("Primary API failed, trying backup...");
+        try {
+          // --- Method 2: Country.is (Backup) ---
+          const resBackup = await fetch('https://api.country.is');
+          if (!resBackup.ok) throw new Error('Country.is failed');
+          const dataBackup = await resBackup.json();
+          if (dataBackup.country) detectedCountry = dataBackup.country.toUpperCase();
+        } catch (backupError) {
+          // Both APIs failed.
+          // detectedCountry remains null.
+        }
+      }
+
+      // --- LOGIC DECISION TREE ---
+      if (detectedCountry) {
+        // API Succeeded. Check if country is in our specific list.
+        if (specificOffers.hasOwnProperty(detectedCountry)) {
+          // Tier 1: Listed Country
+          renderOffer(specificOffers[detectedCountry]);
+        } else {
+          // Tier 2: Unlisted Country (Global)
+          renderOffer(globalOffer);
+        }
+      } else {
+        // Tier 3: API Failed / Blocked (Technical Fallback)
+        // console.log("Showing Technical Fallback");
+        renderOffer(technicalFallbackOffer);
+      }
+    }
+
+    // Start immediately
+    initAdStrategy();
+  })();
+</script>
+
+<!-- Google Analytics / AdSense Delayed Loader (Performance Protection) -->
 <script>
   const GTAG_ID = 'G-XTE70X7LT6';
   let gtagLoaded = false;
+  
   function loadGtag() {
     if (gtagLoaded) return;
     gtagLoaded = true;
+    
+    // Google Analytics
     window.dataLayer = window.dataLayer || [];
     function gtag(){ dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', GTAG_ID);
+    
     const script = document.createElement('script');
     script.src = `https://www.googletagmanager.com/gtag/js?id=${GTAG_ID}`;
     script.async = true;
     document.head.appendChild(script);
+
+    // Remove listeners so it only runs once
     ['scroll', 'mousemove', 'touchstart'].forEach(type => {
       window.removeEventListener(type, loadGtag);
     });
   }
+
+  // Trigger on user interaction OR after 4 seconds (fallback)
   window.addEventListener('scroll', loadGtag, { once: true });
   window.addEventListener('mousemove', loadGtag, { once: true });
   window.addEventListener('touchstart', loadGtag, { once: true });
@@ -245,7 +443,3 @@
 </script>
 </body>
 </html>
-
-
-
-
