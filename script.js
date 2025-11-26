@@ -1,25 +1,39 @@
-// --- [v7.2 - OPTIMIZED BUFFSTREAMS HOMEPAGE] ---
+// --- [v7.3 - STICKY FIX & CLS OPTIMIZED] ---
 
 document.addEventListener("DOMContentLoaded", function() {
 
-    // --- 1. STICKY HEADER LOGIC (OPTIMIZED with IntersectionObserver) ---
-    // Replaces scroll event listener to fix Forced Reflow
+    // --- 1. STICKY HEADER LOGIC (FIXED: Placeholder Swap) ---
+    // Solves the issue of header covering content at the top
     (function setupStickyHeader() {
         const header = document.querySelector(".main-header");
-        const sentinel = document.getElementById("header-sentinel");
+        const placeholder = document.getElementById("header-placeholder");
         
-        if (!header || !sentinel) return;
+        if (!header || !placeholder) return;
         
-        // Sticky trigger logic: When sentinel disappears off top, sticky active
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].boundingClientRect.y < 0) {
-                header.classList.add("sticky");
-            } else {
-                header.classList.remove("sticky");
-            }
-        }, { threshold: [0], rootMargin: "60px 0px 0px 0px" });
+        // Threshold: When user scrolls past 100px, trigger sticky
+        const THRESHOLD = 100;
 
-        observer.observe(sentinel);
+        window.addEventListener("scroll", function() {
+            window.requestAnimationFrame(() => {
+                if (window.scrollY > THRESHOLD) {
+                    if (!header.classList.contains("sticky")) {
+                        // Activate Sticky
+                        header.classList.add("sticky");
+                        // Show placeholder to fill the gap in DOM so content doesn't jump
+                        placeholder.style.height = "60px";
+                        placeholder.style.visibility = "visible";
+                    }
+                } else {
+                    if (header.classList.contains("sticky")) {
+                        // Deactivate Sticky
+                        header.classList.remove("sticky");
+                        // Hide placeholder
+                        placeholder.style.height = "0";
+                        placeholder.style.visibility = "hidden";
+                    }
+                }
+            });
+        }, { passive: true });
     })();
 
     // --- 2. MOBILE SIDEBAR MENU LOGIC ---
@@ -122,7 +136,7 @@ window.addEventListener('load', function() {
         }
     })();
 
-    // --- 6. DISCORD FETCHER ---
+    // --- 6. DISCORD FETCHER (Updated with Placeholder Removal) ---
     (function fetchDiscordInvite() {
         const apiUrl = `https://discord.com/api/guilds/${CONFIG.discordServerId}/widget.json`;
         const discordButton = document.getElementById("discord-join-link");
@@ -135,10 +149,15 @@ window.addEventListener('load', function() {
             })
             .catch(() => {
                 discordButton.href = CONFIG.discordFallbackInvite;
+            })
+            .finally(() => {
+                // Remove the skeleton loading class once data is ready
+                discordButton.classList.remove('skeleton-loading');
+                discordButton.classList.add('loaded');
             });
     })();
     
-    // --- 7. HYBRID CATEGORY LOGIC (Dual API + Dynamic Timing) ---
+    // --- 7. HYBRID CATEGORY LOGIC ---
     (async function initializeHybridCategorySorting() {
         const categoriesGrid = document.querySelector('.categories-grid');
         if (!categoriesGrid) return;
@@ -291,7 +310,6 @@ window.addEventListener('load', function() {
             img.loading = 'lazy';
             img.width = 90;
             img.height = 90;
-            // Explicitly set these for CLS prevention
             img.style.aspectRatio = "1/1"; 
             
             const span = document.createElement('span');
@@ -320,7 +338,6 @@ window.addEventListener('load', function() {
             return card;
         };
 
-        // Batch update to DOM using DocumentFragment for performance
         const fragment = document.createDocumentFragment();
         finalCategoryData.forEach((category, index) => {
             const card = createCategoryCard(category);
