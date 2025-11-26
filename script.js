@@ -1,8 +1,9 @@
-// --- [v7.4 - FINAL FIX: STICKY & CLS] ---
+// --- [v7.5 - STICKY FIX & ZERO MOVEMENT/CLS] ---
 
 document.addEventListener("DOMContentLoaded", function() {
 
-    // --- 1. STICKY HEADER LOGIC (Simplified & Robust) ---
+    // --- 1. STICKY HEADER LOGIC (FIXED: Placeholder Swap) ---
+    // Solves the issue of header covering content at the top
     (function setupStickyHeader() {
         const header = document.querySelector(".main-header");
         const placeholder = document.getElementById("header-placeholder");
@@ -12,20 +13,23 @@ document.addEventListener("DOMContentLoaded", function() {
         // Threshold: 100px scroll triggers sticky
         const THRESHOLD = 100;
 
-        // Use requestAnimationFrame for smooth scrolling check
         window.addEventListener("scroll", function() {
             window.requestAnimationFrame(() => {
                 if (window.scrollY > THRESHOLD) {
-                    // Enable Sticky
                     if (!header.classList.contains("sticky")) {
+                        // Activate Sticky
                         header.classList.add("sticky");
-                        placeholder.style.display = "block"; // Fill the gap immediately
+                        // Show placeholder to fill the gap in DOM so content doesn't jump
+                        placeholder.style.display = "block";
+                        placeholder.style.visibility = "visible";
                     }
                 } else {
-                    // Disable Sticky
                     if (header.classList.contains("sticky")) {
+                        // Deactivate Sticky
                         header.classList.remove("sticky");
-                        placeholder.style.display = "none"; // Remove gap
+                        // Hide placeholder
+                        placeholder.style.display = "none";
+                        placeholder.style.visibility = "hidden";
                     }
                 }
             });
