@@ -10,27 +10,24 @@ body a{color:var(--accent-primary);text-decoration:none}
 body a:hover{text-decoration:underline}
 main{display:block}
 
-/* Header Animation & Logic */
-/* Default state (Relative) - This ensures it doesn't cover content at top */
+/* Header Logic */
 .main-header {
     position: relative;
     top: 0;
     width: 100%;
     z-index: 1001;
+    transition: background 0.3s ease;
 }
 
-/* Sticky State (Fixed) - Triggered by JS */
+/* Sticky State - Fixed with NO moving animation (Solves Layout Shift & Disappearing Issue) */
 .main-header.sticky {
     position: fixed;
     top: 0;
     left: 0;
-    box-shadow: 0 4px 6px rgba(0,0,0,.5);
-    transform: translateY(-100%);
-    animation: slide-down .4s ease-out forwards;
+    box-shadow: 0 4px 10px rgba(0,0,0,.6);
     border-bottom: none;
+    background: rgba(13,17,23,0.98);
 }
-.main-header.sticky, #sticky-footer-ad { will-change: transform; }
-@keyframes slide-down{100%{transform:translateY(0)}}
 
 /* Mobile Sidebar Styling */
 .mobile-nav-list { list-style: none; padding: 0; margin: 20px 0; }
@@ -41,18 +38,18 @@ main{display:block}
 .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color); }
 .sidebar-schedule-btn { display: block; width: 100%; text-align: center; background: var(--accent-primary); color: #fff; padding: 10px; border-radius: 8px; font-weight: 600; text-decoration: none; }
 
-/* Discord Banner - Placeholder & CLS Fix */
+/* Discord Banner - Fixed Placeholder Height */
 .discord-cta-container { 
     width: 90%; 
     max-width: 1400px; 
     margin: 1.5rem auto 2rem auto; 
     padding: 0 1rem; 
-    /* Placeholder Height */
-    min-height: 84px; 
+    min-height: 84px; /* Exact height reserved */
     contain: layout style;
 }
-.discord-full-banner { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border: 1px solid #404eed; padding: 1rem 1.5rem; border-radius: 12px; color: var(--white); text-decoration: none; transition: 0.3s ease; box-shadow: 0 4px 12px rgba(88,101,242,0.15); height: 100%; }
-.discord-full-banner:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(88,101,242,0.25); background: #1c212b; text-decoration: none; }
+.discord-full-banner { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border: 1px solid #404eed; padding: 1rem 1.5rem; border-radius: 12px; color: var(--white); text-decoration: none; transition: 0.2s ease; box-shadow: 0 4px 12px rgba(88,101,242,0.15); height: 100%; }
+/* Changed to Scale/Opacity to avoid layout shift */
+.discord-full-banner:hover { transform: scale(1.01); box-shadow: 0 6px 16px rgba(88,101,242,0.25); background: #1c212b; text-decoration: none; }
 .discord-content { display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 1.1rem; }
 .discord-arrow { font-size: 1.5rem; color: #404eed; transition: transform 0.2s; }
 .discord-full-banner:hover .discord-arrow { transform: translateX(5px); }
@@ -76,10 +73,10 @@ footer p{padding-bottom:30px}
 
 #sticky-footer-ad{position:fixed;bottom:0;left:0;width:100%;background:#161b22;padding:10px;z-index:9999;font-family:Arial,sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;box-shadow:0 -3px 10px rgba(0,0,0,.4);overflow:hidden}
 .ad-content{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;justify-content:center;padding:0 20px}
-.emoji{font-size:24px;animation:1s infinite bounce}
-.cta-text{font-size:16px;font-weight:700;animation:2s infinite pulseText;white-space:nowrap;text-overflow:ellipsis}
-.download-btn{background:#111;color:#fff;padding:8px 20px;border-radius:25px;font-size:16px;font-weight:700;text-decoration:none;transition:.3s;animation:1.5s infinite alternate buttonPulse}
-.download-btn:hover{background:#fff;color:#111;transform:scale(1.1)}
+.emoji{font-size:24px;} /* Removed bounce animation */
+.cta-text{font-size:16px;font-weight:700;white-space:nowrap;text-overflow:ellipsis}
+.download-btn{background:#111;color:#fff;padding:8px 20px;border-radius:25px;font-size:16px;font-weight:700;text-decoration:none;transition:.3s;}
+.download-btn:hover{background:#fff;color:#111;transform:scale(1.05);}
 #close-ad{position:absolute;top:3px;right:17px;font-size:14px;padding:5px;border-radius:50%;background:#333;color:#fff;cursor:pointer;box-shadow:0 0 5px rgba(0,0,0,.5);transition:.3s;}
 #close-ad:hover{background:red}
 
@@ -98,11 +95,11 @@ footer p{padding-bottom:30px}
 /* ========================================================================= */
 .main-content-title{text-align:center;font-size:clamp(1.5rem,5vw,2.2rem);font-weight:700;color:var(--white);margin:3rem 0 2rem;padding:0 1rem;letter-spacing:.5px;text-shadow:1px 1px 4px rgba(0,0,0,.6)}
 
-.search-and-schedule-container{display:flex;gap:1rem;align-items:center;margin:0 auto 3rem auto;padding:0 1rem;max-width:1400px;width:90%}
-.search-trigger{flex-grow:1;display:flex;align-items:center;gap:.75rem;background-color:var(--bg-secondary);padding:.8rem 1rem;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;transition:all .3s ease;color:var(--text-secondary)}
+.search-and-schedule-container{display:flex;gap:1rem;align-items:center;margin:0 auto 3rem auto;padding:0 1rem;max-width:1400px;width:90%; min-height: 52px; contain: layout; }
+.search-trigger{flex-grow:1;display:flex;align-items:center;gap:.75rem;background-color:var(--bg-secondary);padding:.8rem 1rem;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;transition:all .2s ease;color:var(--text-secondary); height: 100%;}
 .search-trigger:hover{border-color:var(--accent-primary)}
 .search-trigger svg{width:1em;height:1em;color:var(--accent-primary);fill:currentColor}
-.schedule-button{flex-shrink:0;padding:.8rem 1.5rem;background-color:var(--accent-primary);color:var(--white);font-weight:600;text-decoration:none;border-radius:8px;transition:background-color .3s ease;text-align:center}
+.schedule-button{flex-shrink:0;padding:.8rem 1.5rem;background-color:var(--accent-primary);color:var(--white);font-weight:600;text-decoration:none;border-radius:8px;transition:background-color .2s ease;text-align:center; height: 100%; display: flex; align-items: center;}
 .schedule-button:hover{background-color:#61a0ff;text-decoration:none}
 
 /* Categories Placeholder & Grid */
@@ -129,7 +126,7 @@ footer p{padding-bottom:30px}
     min-height: 250px;
 }
 
-.category-card:hover{transform:translateY(-10px);border-color:var(--accent-primary);box-shadow:0 12px 24px rgba(0,0,0,.6);text-decoration:none}
+.category-card:hover{transform:translateY(-5px);border-color:var(--accent-primary);box-shadow:0 12px 24px rgba(0,0,0,.6);text-decoration:none}
 .category-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;background:radial-gradient(circle at 50% 0%,rgba(58,134,255,.25),transparent 70%);opacity:0;transition:opacity .4s ease;z-index:1}
 .category-card:hover::before{opacity:1}
 
@@ -146,7 +143,7 @@ footer p{padding-bottom:30px}
     z-index:2
 }
 
-.category-card:hover img{transform:scale(1.1)}
+.category-card:hover img{transform:scale(1.05)}
 .category-card span{font-size:0.9rem;font-weight:600;display:block;color:var(--white);text-transform:uppercase;letter-spacing:1px;z-index:2;text-align:center}
 
 /* Badges */
