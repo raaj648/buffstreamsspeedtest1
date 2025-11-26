@@ -1,7 +1,7 @@
 /* ========================================================================= */
 /* ===  1. CORE & SHARED STYLES  =========================================== */
 /* ========================================================================= */
-*, *::before, *::after { box-sizing: border-box; } /* CRITICAL FIX for overflow */
+*, *::before, *::after { box-sizing: border-box; }
 
 :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff;--discord-color:#5865F2}
 html { overflow-y: scroll; }
@@ -10,13 +10,20 @@ body a{color:var(--accent-primary);text-decoration:none}
 body a:hover{text-decoration:underline}
 main{display:block}
 
-/* Header Animation - Fixed Sticky Logic */
+/* Header Animation & Logic */
+/* Default state (Relative) - This ensures it doesn't cover content at top */
+.main-header {
+    position: relative;
+    top: 0;
+    width: 100%;
+    z-index: 1001;
+}
+
+/* Sticky State (Fixed) - Triggered by JS */
 .main-header.sticky {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    z-index: 1000;
     box-shadow: 0 4px 6px rgba(0,0,0,.5);
     transform: translateY(-100%);
     animation: slide-down .4s ease-out forwards;
@@ -34,13 +41,24 @@ main{display:block}
 .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color); }
 .sidebar-schedule-btn { display: block; width: 100%; text-align: center; background: var(--accent-primary); color: #fff; padding: 10px; border-radius: 8px; font-weight: 600; text-decoration: none; }
 
-/* Discord Banner */
-.discord-cta-container { width: 90%; max-width: 1400px; margin: 1.5rem auto 2rem auto; padding: 0 1rem; min-height: 80px; contain: content; }
-.discord-full-banner { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border: 1px solid #404eed; padding: 1rem 1.5rem; border-radius: 12px; color: var(--white); text-decoration: none; transition: 0.3s ease; box-shadow: 0 4px 12px rgba(88,101,242,0.15); }
+/* Discord Banner - Placeholder & CLS Fix */
+.discord-cta-container { 
+    width: 90%; 
+    max-width: 1400px; 
+    margin: 1.5rem auto 2rem auto; 
+    padding: 0 1rem; 
+    /* Placeholder Height */
+    min-height: 84px; 
+    contain: layout style;
+}
+.discord-full-banner { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border: 1px solid #404eed; padding: 1rem 1.5rem; border-radius: 12px; color: var(--white); text-decoration: none; transition: 0.3s ease; box-shadow: 0 4px 12px rgba(88,101,242,0.15); height: 100%; }
 .discord-full-banner:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(88,101,242,0.25); background: #1c212b; text-decoration: none; }
 .discord-content { display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 1.1rem; }
 .discord-arrow { font-size: 1.5rem; color: #404eed; transition: transform 0.2s; }
 .discord-full-banner:hover .discord-arrow { transform: translateX(5px); }
+
+/* Remove skeleton animation once loaded */
+.discord-full-banner.loaded { background: var(--bg-secondary); animation: none; }
 
 /* Footer Styles */
 footer{background:var(--bg-secondary);color:var(--text-secondary);padding:1rem;margin-top:2rem;text-align:center; content-visibility: auto;}
@@ -65,7 +83,6 @@ footer p{padding-bottom:30px}
 #close-ad{position:absolute;top:3px;right:17px;font-size:14px;padding:5px;border-radius:50%;background:#333;color:#fff;cursor:pointer;box-shadow:0 0 5px rgba(0,0,0,.5);transition:.3s;}
 #close-ad:hover{background:red}
 
-/* Amazon Button specific style */
 .amazon-btn { background: #00A8E1; color: white; }
 .amazon-btn:hover { background: #0087b5; color: white; }
 
@@ -88,31 +105,56 @@ footer p{padding-bottom:30px}
 .schedule-button{flex-shrink:0;padding:.8rem 1.5rem;background-color:var(--accent-primary);color:var(--white);font-weight:600;text-decoration:none;border-radius:8px;transition:background-color .3s ease;text-align:center}
 .schedule-button:hover{background-color:#61a0ff;text-decoration:none}
 
-/* CLS FIX: Ensure container has stability */
-.categories-container{width:90%;max-width:1400px;margin:2rem auto;padding:1rem 0; content-visibility: auto; min-height: 800px; }
-
+/* Categories Placeholder & Grid */
+.categories-container{width:90%;max-width:1400px;margin:2rem auto;padding:1rem 0; content-visibility: auto; min-height: 800px;}
 .categories-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem}
 
-/* CLS FIX: Ensure cards don't collapse before JS loads */
-.category-card{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;background-color:var(--bg-secondary);border-radius:16px;text-decoration:none;color:var(--white);border:1px solid var(--border-color);box-shadow:0 4px 10px rgba(0,0,0,.4);transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease; min-height: 250px;} 
+/* Category Card Placeholder */
+.category-card{
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:2.5rem 1.5rem;
+    background-color:var(--bg-secondary);
+    border-radius:16px;
+    text-decoration:none;
+    color:var(--white);
+    border:1px solid var(--border-color);
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+    transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;
+    /* Placeholder: Force Height */
+    min-height: 250px;
+}
 
 .category-card:hover{transform:translateY(-10px);border-color:var(--accent-primary);box-shadow:0 12px 24px rgba(0,0,0,.6);text-decoration:none}
 .category-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;background:radial-gradient(circle at 50% 0%,rgba(58,134,255,.25),transparent 70%);opacity:0;transition:opacity .4s ease;z-index:1}
 .category-card:hover::before{opacity:1}
 
-/* CLS FIX: Rigid Dimensions for Images */
-.category-card img{width:90px;height:90px;aspect-ratio: 1/1; object-fit:contain;margin-bottom:1.5rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));transition:transform .3s ease;z-index:2}
+/* Image Placeholder & Aspect Ratio */
+.category-card img{
+    width:90px;
+    height:90px;
+    /* Forces space for image even if not loaded */
+    aspect-ratio: 1/1; 
+    object-fit:contain;
+    margin-bottom:1.5rem;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));
+    transition:transform .3s ease;
+    z-index:2
+}
 
 .category-card:hover img{transform:scale(1.1)}
 .category-card span{font-size:0.9rem;font-weight:600;display:block;color:var(--white);text-transform:uppercase;letter-spacing:1px;z-index:2;text-align:center}
 
-/* Live Viewer Badge */
+/* Badges */
 .category-card .live-badge {position: absolute;top: 12px;right: 12px;background-color: #e53935;color: var(--white);padding: 4px 10px;border-radius: 20px;font-size: 0.8rem;font-weight: 700;display: flex;align-items: center;gap: 8px;z-index: 3;box-shadow: 0 2px 5px rgba(0,0,0,0.3);border: 1px solid rgba(255, 255, 255, 0.2);opacity: 0;transform: scale(0.8);transition: opacity 0.4s ease, transform 0.4s ease;}
 .category-card .live-badge.visible {opacity: 1;transform: scale(1);}
 .category-card .live-badge::before {content: '';width: 8px;height: 8px;background-color: #fff;border-radius: 50%;animation: pulse-white 1.5s infinite;}
 .category-card .live-badge .viewer-icon {width: 1.2em;height: 1.2em;opacity: 0.8;}
 
-/* Match Count Badge */
 .category-card .count-badge {position: absolute;top: 12px;left: 12px;background-color: var(--accent-primary);color: var(--white);padding: 4px 10px;border-radius: 20px;font-size: 0.8rem;font-weight: 700;display: flex;align-items: center;gap: 5px;z-index: 3;box-shadow: 0 2px 5px rgba(0,0,0,0.3);border: 1px solid rgba(255, 255, 255, 0.2);opacity: 0;transform: scale(0.8);transition: opacity 0.4s ease, transform 0.4s ease;}
 .category-card .count-badge.visible {opacity: 1;transform: scale(1);}
 
@@ -131,7 +173,7 @@ footer p{padding-bottom:30px}
 @media(max-width:768px){
   .main-content-title{margin:1rem 0 2rem;font-size:1.4rem}
   .categories-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem}
-  .category-card{padding:2rem 1rem; min-height: 200px;} /* Consistent height */
+  .category-card{padding:2rem 1rem; min-height: 200px;} 
   .search-and-schedule-container{flex-direction:column;align-items:stretch}
   .discord-full-banner { padding: 0.8rem 1rem; }
   .discord-content { font-size: 0.95rem; }
@@ -141,10 +183,9 @@ footer p{padding-bottom:30px}
 
 @media(max-width:480px){
   .categories-grid{grid-template-columns:1fr 1fr;gap:1rem}
-  .category-card img{width:70px;height:70px;max-width:70px;} /* CLS Fix: Strict dimensions */
-  .category-card span{font-size:0.5rem}
+  .category-card img{width:70px;height:70px;max-width:70px;}
+  .category-card span{font-size:0.55rem}
   .category-card .live-badge, .category-card .count-badge{top:8px;font-size:0.7rem;padding:3px 8px;}
   .category-card .live-badge{right:8px;}
   .category-card .count-badge{left:8px; max-width: 80px;}
 }
-
