@@ -56,6 +56,12 @@
     .categories-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; }
     .category-card { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2.5rem 1.5rem; background-color:var(--bg-secondary); border-radius:16px; border:1px solid var(--border-color); min-height: 250px; }
     .category-card img { width:90px; height:90px; aspect-ratio: 1/1; object-fit:contain; margin-bottom:1.5rem; }
+	  .search-trigger svg {
+    width: 1em;
+    height: 1em;
+    color: var(--accent-primary);
+    fill: currentColor;
+}
   </style>
 
   <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -277,4 +283,5 @@
 </script>
 </body>
 </html>
+
 
