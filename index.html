@@ -23,53 +23,7 @@
 
   <!-- Critical CSS & Layout Stability Styles -->
   <style>
-    :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff}
-    *,::after,::before{box-sizing:border-box}
-    html{overflow-y:scroll}
-    body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:var(--bg-primary);color:var(--text-primary);line-height:1.6}
-    
-    /* Header Structure */
-    .main-header{background:rgba(13,17,23,.98);backdrop-filter:blur(10px);height:60px;display:flex;justify-content:center;border-bottom:1px solid var(--border-color);width:100%;z-index:1001;position:relative;}
-    .header-inner{width:90%;max-width:1400px;display:flex;justify-content:space-between;align-items:center;height:100%}
-    .nav-left{display:flex;align-items:center;gap:15px}
-    .nav-menu{list-style:none;display:flex;gap:5px;padding:0;margin:0}
-    .nav-menu li a{color:var(--text-primary);text-decoration:none;font-weight:500;font-size:14px;padding:8px 12px;border-radius:6px}
-    .brand-link{font-size:1.4rem;font-weight:900;color:var(--white);text-decoration:none}
-    
-    /* Header Placeholder - Crucial for Sticky CLS Fix */
-    #header-placeholder { height: 60px; width: 100%; display: none; visibility: hidden; }
-
-    /* Skeleton Loading - COLOR CHANGE ONLY (No movement) */
-    .skeleton-loading { background-color: var(--bg-secondary); }
-
-    /* Mobile */
-    .mobile-toggle{display:none;background:0 0;border:none;color:var(--white);padding:5px}
-    .mobile-toggle svg{width:24px;height:24px}
-    .mobile-sidebar{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg-primary);border-right:1px solid var(--border-color);transform:translateX(-100%);z-index:2000;padding:20px;display:flex;flex-direction:column}
-    .mobile-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);opacity:0;visibility:hidden;z-index:1999;backdrop-filter:blur(2px)}
-    @media (max-width:900px){.nav-menu{display:none}.mobile-toggle{display:block}}
-
-    /* STRICT CSS Placeholders (Min-Heights & Containment) */
-    .discord-cta-container { width: 90%; max-width: 1400px; margin: 1.5rem auto 2rem; padding: 0 1rem; min-height: 84px; contain: layout style; }
-	  .discord-full-banner { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border: 1px solid #404eed; padding: 1rem 1.5rem; border-radius: 12px; color: var(--white); text-decoration: none; transition: box-shadow 0.2s ease; box-shadow: 0 4px 12px rgba(88,101,242,0.15); height: 100%; }
-	  .discord-full-banner:hover { box-shadow: 0 6px 16px rgba(88,101,242,0.4); background: #1c212b; text-decoration: none; }
-.discord-content { display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 1.1rem; }
-.discord-arrow { font-size: 1.5rem; color: #404eed; }
-
-/* Remove skeleton class when loaded */
-.discord-full-banner.loaded { background: var(--bg-secondary); }
-	  
-    .search-and-schedule-container { display:flex; gap:1rem; align-items:center; margin:0 auto 3rem; padding:0 1rem; max-width:1400px; width:90%; min-height: 54px; contain: layout; }
-    .categories-container { width: 90%; max-width: 1400px; margin: 2rem auto; padding: 1rem 0; min-height: 800px; contain: layout; }
-    .categories-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; }
-    .category-card { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2.5rem 1.5rem; background-color:var(--bg-secondary); border-radius:16px; border:1px solid var(--border-color); min-height: 250px; }
-    .category-card img { width:90px; height:90px; aspect-ratio: 1/1; object-fit:contain; margin-bottom:1.5rem; }
-	  .search-trigger svg {
-    width: 1em;
-    height: 1em;
-    color: var(--accent-primary);
-    fill: currentColor;
-}
+    :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff}.main-header{background:rgba(13,17,23,.98);backdrop-filter:blur(10px);height:60px;display:flex;justify-content:center;border-bottom:1px solid var(--border-color);width:100%;z-index:1001;position:relative}.header-inner{width:90%;max-width:1400px;display:flex;justify-content:space-between;align-items:center;height:100%}.nav-left{display:flex;align-items:center;gap:15px}.nav-menu{list-style:none;display:flex;gap:5px;padding:0;margin:0}.nav-menu li a{color:var(--text-primary);text-decoration:none;font-weight:500;font-size:14px;padding:8px 12px;border-radius:6px}.brand-link{font-size:1.4rem;font-weight:900;color:var(--white);text-decoration:none}#header-placeholder{height:60px;width:100%;display:none;visibility:hidden}.skeleton-loading{background-color:var(--bg-secondary)}.mobile-toggle{display:none;background:0 0;border:none;color:var(--white);padding:5px}.mobile-toggle svg{width:24px;height:24px}.mobile-sidebar{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg-primary);border-right:1px solid var(--border-color);transform:translateX(-100%);z-index:2000;padding:20px;display:flex;flex-direction:column}.mobile-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);opacity:0;visibility:hidden;z-index:1999;backdrop-filter:blur(2px)}@media (max-width:900px){.nav-menu{display:none}.mobile-toggle{display:block}}.categories-container{width:90%;max-width:1400px;margin:2rem auto;padding:1rem 0;min-height:800px;contain:layout}.category-card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;background-color:var(--bg-secondary);border-radius:16px;border:1px solid var(--border-color);min-height:250px}.category-card img{width:90px;height:90px;aspect-ratio:1/1;object-fit:contain;margin-bottom:1.5rem}*,::after,::before{box-sizing:border-box}:root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff;--discord-color:#5865F2}html{overflow-y:scroll}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:var(--bg-primary);color:var(--text-primary);line-height:1.6}body a{color:var(--accent-primary);text-decoration:none}main{display:block}.main-header{position:relative;top:0;width:100%;z-index:1001}.mobile-nav-list{list-style:none;padding:0;margin:20px 0}.mobile-nav-list li{margin-bottom:5px}.mobile-nav-list li a{display:block;padding:12px 15px;color:var(--text-primary);text-decoration:none;border-radius:8px;font-weight:500}.sidebar-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--border-color)}.sidebar-footer{margin-top:auto;padding-top:20px;border-top:1px solid var(--border-color)}.sidebar-schedule-btn{display:block;width:100%;text-align:center;background:var(--accent-primary);color:#fff;padding:10px;border-radius:8px;font-weight:600;text-decoration:none}.discord-cta-container{width:90%;max-width:1400px;margin:1.5rem auto 2rem;padding:0 1rem;min-height:84px;contain:layout style}.discord-full-banner{display:flex;align-items:center;justify-content:space-between;background:var(--bg-secondary);border:1px solid #404eed;padding:1rem 1.5rem;border-radius:12px;color:var(--white);text-decoration:none;box-shadow:0 4px 12px rgba(88,101,242,.15);height:100%}.discord-content{display:flex;align-items:center;gap:15px;font-weight:600;font-size:1.1rem}.discord-arrow{font-size:1.5rem;color:#404eed}#sticky-ad-placeholder{display:none;height:44px}.search-and-schedule-container{display:flex;gap:1rem;align-items:center;margin:0 auto 3rem;padding:0 1rem;max-width:1400px;width:90%;min-height:54px;contain:layout}.search-trigger{flex-grow:1;display:flex;align-items:center;gap:.75rem;background-color:var(--bg-secondary);padding:.8rem 1rem;border-radius:8px;border:1px solid var(--border-color);color:var(--text-secondary);height:100%}.search-trigger svg{width:1em;height:1em;color:var(--accent-primary);fill:currentColor}.schedule-button{flex-shrink:0;padding:.8rem 1.5rem;background-color:var(--accent-primary);color:var(--white);font-weight:600;text-decoration:none;border-radius:8px;text-align:center;height:100%;display:flex;align-items:center}.categories-container{width:90%;max-width:1400px;margin:2rem auto;padding:1rem 0;content-visibility:auto;min-height:800px}.categories-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem}.category-card{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.5rem;background-color:var(--bg-secondary);border-radius:16px;text-decoration:none;color:var(--white);border:1px solid var(--border-color);box-shadow:0 4px 10px rgba(0,0,0,.4);min-height:250px}.category-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;background:radial-gradient(circle at 50% 0,rgba(58,134,255,.25),transparent 70%);opacity:0;z-index:1}.category-card img{width:90px;height:90px;aspect-ratio:1/1;object-fit:contain;margin-bottom:1.5rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));z-index:2}.category-card span{font-size:.9rem;font-weight:600;display:block;color:var(--white);text-transform:uppercase;letter-spacing:1px;z-index:2;text-align:center}@media (max-width:768px){.categories-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem}.category-card{padding:2rem 1rem;min-height:200px}.search-and-schedule-container{flex-direction:column;align-items:stretch}.discord-full-banner{padding:.8rem 1rem}.discord-content{font-size:.95rem}}@media (max-width:480px){.categories-grid{grid-template-columns:1fr 1fr;gap:1rem}.category-card img{width:70px;height:70px;max-width:70px}.category-card span{font-size:.55rem}}
   </style>
 
   <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -291,6 +245,7 @@
 </script>
 </body>
 </html>
+
 
 
 
