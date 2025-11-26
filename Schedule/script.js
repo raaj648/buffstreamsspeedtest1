@@ -1,13 +1,72 @@
 document.addEventListener("DOMContentLoaded", function() {
     console.log("--- Buffstreams Schedule Script Started ---");
 
-    // --- CONFIGURATION ---
+    // --- 1. AFFILIATE & GEO CONFIGURATION ---
+    
+    // Triple Logic: Specific Country > Global > Technical Fallback
+    const GEO_OFFERS = {
+        'US': { img: 'YOUR_USA_IMAGE_URL_HERE.jpg', link: 'YOUR_USA_AFFILIATE_LINK_HERE', cta: 'Claim $500 Bonus', label: 'EXCLUSIVE' },
+        'GB': { img: 'YOUR_UK_IMAGE_URL_HERE.jpg', link: 'YOUR_UK_AFFILIATE_LINK_HERE', cta: 'Bet £10 Get £30', label: 'UK SPECIAL' },
+        'CA': { img: 'YOUR_CANADA_IMAGE_URL_HERE.jpg', link: 'YOUR_CANADA_AFFILIATE_LINK_HERE', cta: 'Get $200 Free Bet', label: 'BONUS' },
+        'GR': { img: 'YOUR_CANADA_IMAGE_URL_HERE.jpg', link: 'YOUR_GREECE_AFFILIATE_LINK_HERE', cta: 'Claim Bonus Now', label: 'OFFER' },
+        'default': { img: '../test.jpg', link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE', cta: 'Join & Win Big', label: 'SPONSORED' }
+    };
+
+    const FALLBACK_OFFER = { img: 'YOUR_FALLBACK_IMAGE_URL_HERE.jpg', link: 'YOUR_FALLBACK_AFFILIATE_LINK_HERE', cta: 'Play Now', label: 'PROMO' };
+
+    let currentAffiliateOffer = GEO_OFFERS['default']; // Default start
+    let isGeoResolved = false;
+
+    // --- 2. ROBUST GEO-DETECTION (Double API) ---
+    async function initGeoLogic() {
+        let detectedCountry = null;
+        try {
+            // Method 1: GeoJS
+            const res = await fetch('https://get.geojs.io/v1/ip/country.json?_=' + new Date().getTime());
+            if (!res.ok) throw new Error('GeoJS failed');
+            const data = await res.json();
+            if (data.country) detectedCountry = data.country.toUpperCase();
+        } catch (e1) {
+            try {
+                // Method 2: Country.is
+                const res2 = await fetch('https://api.country.is');
+                if (!res2.ok) throw new Error('Country.is failed');
+                const data2 = await res2.json();
+                if (data2.country) detectedCountry = data2.country.toUpperCase();
+            } catch (e2) {
+                console.warn("Geo Detection Failed. Using Fallback.");
+                currentAffiliateOffer = FALLBACK_OFFER;
+                isGeoResolved = true;
+                return;
+            }
+        }
+
+        if (detectedCountry) {
+            if (GEO_OFFERS.hasOwnProperty(detectedCountry)) {
+                currentAffiliateOffer = GEO_OFFERS[detectedCountry];
+            } else {
+                currentAffiliateOffer = GEO_OFFERS['default'];
+            }
+        } else {
+            currentAffiliateOffer = FALLBACK_OFFER;
+        }
+        isGeoResolved = true;
+        
+        // Refresh grid if matches loaded before Geo finished
+        if(allMatches.length > 0) renderMatches();
+    }
+    
+    // Start Geo Detection immediately
+    initGeoLogic();
+
+   
+
+    // --- 4. CORE SCHEDULE LOGIC ---
     const CONFIG = {
         apiPrimary: 'https://streamed.pk/api',
         apiBackup: 'https://topembed.pw/api.php?format=json',
         proxyUrl: 'https://corsproxy.io/?', 
         primaryTimeout: 4000,
-        // Durations used to determine if a match is finished
         sportDurations: {
             'football': 150, 'basketball': 165, 'american-football': 210, 
             'baseball': 210, 'hockey': 160, 'fight': 300, 'motor-sports': 180, 
@@ -16,11 +75,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    // --- STATE ---
     let allMatches = []; 
     let currentFilters = { live: false, popular: false, sport: 'all' };
 
-    // --- DOM ELEMENTS ---
     const elements = {
         header: document.querySelector(".main-header"),
         filterBar: document.getElementById("filter-bar"),
@@ -31,8 +88,6 @@ document.addEventListener("DOMContentLoaded", function() {
         filterToggleBtn: document.getElementById("filter-toggle"),
         activeFilters: document.getElementById("active-filters-container"),
         skeletonLoader: document.getElementById("skeleton-loader"),
-        
-        // Finished Matches Section
         finishedSection: document.getElementById("finished-matches-section"),
         finishedContainer: document.getElementById("finished-container"),
         toggleFinishedBtn: document.getElementById("toggle-finished-btn"),
@@ -41,12 +96,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (!elements.matchesContainer) return;
 
-    // --- UTILITY ---
+    // Utility Functions
     const formatViewers = (num) => {
         if (!num) return '';
-        if (num >= 1000) {
-            return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-        }
+        if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
         return num;
     };
 
@@ -70,15 +123,13 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     const generateBackupId = (event) => {
-        // Normalize match title for ID consistency
         const safeMatch = (event.match || event.event || "").toLowerCase().replace(/[^a-z0-9]/g, '');
         const safeSport = (event.sport || "").toLowerCase().trim();
         const unix = event.unix_timestamp;
-        const uniqueString = `${unix}_${safeSport}_${safeMatch}`;
-        return btoa(unescape(encodeURIComponent(uniqueString)));
+        return btoa(unescape(encodeURIComponent(`${unix}_${safeSport}_${safeMatch}`)));
     };
 
-    // --- API 1: PRIMARY (With Filter) ---
+    // --- API Fetching ---
     function buildPrimaryPosterUrl(match) {
         if (match.teams?.home?.badge && match.teams?.away?.badge) {
             return `${CONFIG.apiPrimary}/images/poster/${match.teams.home.badge}/${match.teams.away.badge}.webp`;
@@ -96,104 +147,60 @@ document.addEventListener("DOMContentLoaded", function() {
         try {
             const allRes = await fetch(`${CONFIG.apiPrimary}/matches/all`);
             if(!allRes.ok) throw new Error(`Primary Match API Error: ${allRes.status}`);
-            
             const allData = await allRes.json();
             const nowSec = Date.now() / 1000;
 
             return allData.map(m => {
                 return {
-                    id: m.id,
-                    title: m.title,
-                    date: m.date, 
-                    category: normalizeCategory(m.category),
-                    isLive: false,
-                    popular: m.popular || false,
-                    viewers: m.viewers || 0,
-                    sources: m.sources || [],
-                    posterUrl: buildPrimaryPosterUrl(m),
-                    source: 'primary'
+                    id: m.id, title: m.title, date: m.date, category: normalizeCategory(m.category),
+                    isLive: false, popular: m.popular || false, viewers: m.viewers || 0,
+                    sources: m.sources || [], posterUrl: buildPrimaryPosterUrl(m), source: 'primary'
                 };
             }).filter(m => {
-                // FILTERING LOGIC FOR PRIMARY API
-                
-                // 1. If it has live viewers, KEEP IT (regardless of time)
                 if (m.viewers > 0) return true;
-
                 const durationMins = CONFIG.sportDurations[m.category] || 180;
-                const matchStartSec = m.date / 1000;
-                const diffMinutes = (nowSec - matchStartSec) / 60;
-
-                // 2. If it looks like a 24/7 stream (started > 24 hours ago), KEEP IT
+                const diffMinutes = (nowSec - (m.date / 1000)) / 60;
                 if (diffMinutes > 1440) return true;
-
-                // 3. If time passed is greater than duration + 30 mins buffer, REMOVE IT
-                if (diffMinutes > (durationMins + 30)) {
-                    return false; 
-                }
-
-                // Otherwise (Upcoming or currently playing within time limits), KEEP IT
+                if (diffMinutes > (durationMins + 30)) return false;
                 return true;
             });
-
-        } catch (e) {
-            throw e;
-        }
+        } catch (e) { throw e; }
     }
 
-    // --- API 2: BACKUP (With strict 30min cleanup) ---
     async function fetchBackupAPI() {
         try {
             const url = CONFIG.proxyUrl + encodeURIComponent(CONFIG.apiBackup);
             const res = await fetch(url);
             if(!res.ok) throw new Error(`Backup API Error: ${res.status}`);
-            
             const data = await res.json();
             const backupMatches = [];
             const nowSec = Date.now() / 1000;
 
             if (data && data.events) {
                 for (const dateStr in data.events) {
-                    const rawEvents = data.events[dateStr];
-                    const eventsList = Array.isArray(rawEvents) ? rawEvents : [rawEvents];
-                    
-                    eventsList.forEach(event => {
+                    const rawEvents = Array.isArray(data.events[dateStr]) ? data.events[dateStr] : [data.events[dateStr]];
+                    rawEvents.forEach(event => {
                         if(!event.sport || !event.match || !event.unix_timestamp) return;
-
                         const sportKey = normalizeCategory(event.sport);
                         const unix = parseInt(event.unix_timestamp);
                         const durationMins = CONFIG.sportDurations[sportKey] || 180;
                         const diffMinutes = (nowSec - unix) / 60;
                         
-                        // STRICT RULE: Remove if ended > 30 mins ago (From Backup API Only)
-                        if (diffMinutes > (durationMins + 30)) {
-                            return; 
-                        }
-
-                        const isLive = (diffMinutes >= 0 && diffMinutes < durationMins);
+                        if (diffMinutes > (durationMins + 30)) return; 
                         
                         backupMatches.push({
                             id: generateBackupId(event),
                             title: (event.match || event.event || "Unknown").replace(/ vs /i, ' v '),
-                            date: unix * 1000, 
-                            category: sportKey,
-                            isLive: isLive,
-                            popular: false,
-                            viewers: 0, 
-                            sources: [],
-                            posterUrl: "../Fallbackimage.webp",
-                            source: 'backup'
+                            date: unix * 1000, category: sportKey, isLive: (diffMinutes >= 0 && diffMinutes < durationMins),
+                            popular: false, viewers: 0, sources: [], posterUrl: "../Fallbackimage.webp", source: 'backup'
                         });
                     });
                 }
             }
             return backupMatches;
-        } catch (e) {
-            console.error("Backup API Failed:", e);
-            return [];
-        }
+        } catch (e) { console.error("Backup API Failed:", e); return []; }
     }
 
-    // --- VIEWER FETCH TECHNIQUE ---
     async function fetchAndUpdateViewers() {
         const now = Date.now();
         const liveMatchesForApiCall = allMatches.filter(match => {
@@ -202,8 +209,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         if (liveMatchesForApiCall.length === 0) return;
-
-        console.log(`Checking viewers for ${liveMatchesForApiCall.length} potential live matches...`);
 
         const streamFetchPromises = liveMatchesForApiCall.flatMap(match =>
             match.sources.map(source =>
@@ -223,9 +228,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (!viewerCounts[matchId]) viewerCounts[matchId] = 0;
                 if (Array.isArray(streams)) {
                     streams.forEach(stream => {
-                        if (stream.viewers && typeof stream.viewers === 'number') {
-                            viewerCounts[matchId] += stream.viewers;
-                        }
+                        if (stream.viewers && typeof stream.viewers === 'number') viewerCounts[matchId] += stream.viewers;
                     });
                 }
             }
@@ -244,33 +247,22 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        if (needsRerender) {
-            renderMatches();
-        }
+        if (needsRerender) renderMatches();
     }
 
-    // --- LOAD & MERGE ---
     async function loadMatches() {
         if(elements.matchesContainer) elements.matchesContainer.innerHTML = '';
         if(elements.finishedContainer) elements.finishedContainer.innerHTML = '';
         if(elements.skeletonLoader) elements.skeletonLoader.style.display = 'block';
 
         const backupPromise = fetchBackupAPI();
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("Primary API Timeout")), CONFIG.primaryTimeout)
-        );
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), CONFIG.primaryTimeout));
 
         let primaryMatches = [];
-        try {
-            primaryMatches = await Promise.race([fetchPrimaryAPI(), timeoutPromise]);
-        } catch (error) {
-            console.warn("Skipping Primary API:", error.message);
-            primaryMatches = []; 
-        }
+        try { primaryMatches = await Promise.race([fetchPrimaryAPI(), timeoutPromise]); } 
+        catch (error) { primaryMatches = []; }
 
         const backupMatches = await backupPromise;
-        
-        // Merge
         const merged = [...primaryMatches];
         backupMatches.forEach(bm => {
             const fp = getMatchFingerprint(bm.category, bm.title);
@@ -284,35 +276,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
         allMatches = merged;
         populateCategoryDropdown();
-        handleURLParams(); // Initial Render
-        
+        handleURLParams();
         fetchAndUpdateViewers();
     }
 
-    function populateCategoryDropdown() {
-        const sports = new Set(['all']);
-        allMatches.forEach(m => sports.add(m.category));
-        
-        const priorities = ['football', 'basketball', 'american-football', 'fight', 'motor-sports', 'baseball', 'hockey'];
-        const sortedSports = [...sports].sort((a, b) => {
-            if(a === 'all') return -1;
-            if(b === 'all') return 1;
-            const idxA = priorities.indexOf(a);
-            const idxB = priorities.indexOf(b);
-            if(idxA !== -1 && idxB !== -1) return idxA - idxB;
-            if(idxA !== -1) return -1;
-            if(idxB !== -1) return 1;
-            return a.localeCompare(b);
-        });
-
-        if(elements.categorySelect) {
-            elements.categorySelect.innerHTML = sortedSports.map(s => 
-                `<option value="${s}">${s === 'all' ? 'All Sports' : s.replace(/-/g, ' ').toUpperCase()}</option>`
-            ).join('');
-            elements.categorySelect.value = currentFilters.sport;
-        }
-    }
-
+    // --- CARD CREATION ---
+    
+    // 1. Regular Match Card
     function createMatchCard(match) {
         const card = document.createElement('a');
         card.href = `../Matchinformation/?id=${match.id}`;
@@ -330,9 +300,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const start = match.date;
         const durationMins = CONFIG.sportDurations[match.category] || 180;
         const end = start + (durationMins * 60 * 1000);
-        
-        const startOfToday = new Date();
-        startOfToday.setHours(0,0,0,0);
+        const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
         const is247 = match.date < startOfToday.getTime();
 
         let isActuallyLive = match.isLive || (now >= start && now <= end) || (match.viewers > 0);
@@ -340,30 +308,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const dateObj = new Date(match.date);
         const timeStr = dateObj.toLocaleTimeString([], {hour: 'numeric', minute:'2-digit', hour12: true});
-        const dateStr = dateObj.toLocaleDateString();
 
         const badgeDiv = document.createElement('div');
-        
         if (match.viewers > 0) {
             badgeDiv.className = 'status-badge viewer-badge';
-            badgeDiv.innerHTML = `<span>${formatViewers(match.viewers)}</span>
-            <svg class="viewer-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
-            </svg>`;
+            badgeDiv.innerHTML = `<span>${formatViewers(match.viewers)}</span><svg class="viewer-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path></svg>`;
+        } else if (isActuallyLive || is247) {
+            badgeDiv.className = 'status-badge live'; badgeDiv.innerHTML = `<span>LIVE</span>`;
+        } else if (isFinished) {
+            badgeDiv.className = 'status-badge finished'; badgeDiv.innerHTML = `<span>FINISHED</span>`;
+        } else {
+            badgeDiv.className = 'status-badge date'; badgeDiv.textContent = timeStr;
         }
-        else if (isActuallyLive || is247) {
-            badgeDiv.className = 'status-badge live';
-            badgeDiv.innerHTML = `<span>LIVE</span>`;
-        } 
-        else if (isFinished) {
-            badgeDiv.className = 'status-badge finished';
-            badgeDiv.innerHTML = `<span>FINISHED</span>`;
-        } 
-        else {
-            badgeDiv.className = 'status-badge date';
-            badgeDiv.textContent = timeStr;
-        }
-
         card.appendChild(badgeDiv);
 
         if (match.popular && match.source === 'primary') {
@@ -374,24 +330,59 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         card.appendChild(img);
-
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'match-info';
         
         let bottomMetaText;
         if (is247) bottomMetaText = "24/7 Stream";
         else if (match.viewers > 0 || isActuallyLive) bottomMetaText = `Started: ${timeStr}`;
         else if (isFinished) bottomMetaText = `Started: ${timeStr}`;
-        else bottomMetaText = dateStr;
+        else bottomMetaText = dateObj.toLocaleDateString();
 
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'match-info';
+        infoDiv.innerHTML = `<div class="match-title">${match.title}</div><div class="match-meta-row"><span class="match-category">${match.category}</span><span>${bottomMetaText}</span></div>`;
+        card.appendChild(infoDiv);
+        return card;
+    }
+
+    // 2. Affiliate Match Card (Native Ad)
+    function createAffiliateCard() {
+        // Create the container
+        const card = document.createElement('a');
+        card.href = currentAffiliateOffer.link;
+        card.target = "_blank";
+        card.rel = "nofollow noopener";
+        card.className = 'match-card affiliate-card'; // Add specific class for gold border
+        card.ariaLabel = "Sponsored Offer";
+
+        // Image
+        const img = document.createElement('img');
+        img.className = 'match-poster';
+        img.src = currentAffiliateOffer.img;
+        img.alt = "Exclusive Bonus";
+        img.loading = "eager"; // Load this fast as it's the first item
+
+        // Badge (Sponsored/Bonus)
+        const badgeDiv = document.createElement('div');
+        badgeDiv.className = 'status-badge';
+        badgeDiv.style.background = 'linear-gradient(90deg, #d4af37, #f2d06b)';
+        badgeDiv.style.color = '#000';
+        badgeDiv.innerHTML = `<span>${currentAffiliateOffer.label}</span>`;
+        card.appendChild(badgeDiv);
+        
+        card.appendChild(img);
+
+        // Info
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'match-info';
         infoDiv.innerHTML = `
-            <div class="match-title">${match.title}</div>
+            <div class="match-title" style="color: #d4af37;">${currentAffiliateOffer.cta}</div>
             <div class="match-meta-row">
-                <span class="match-category">${match.category}</span>
-                <span>${bottomMetaText}</span>
+                <span class="match-category">BETTING</span>
+                <span>Verified Offer</span>
             </div>
         `;
         card.appendChild(infoDiv);
+        
         return card;
     }
 
@@ -406,30 +397,22 @@ document.addEventListener("DOMContentLoaded", function() {
         todayDateObj.setHours(0,0,0,0);
         const startOfToday = todayDateObj.getTime();
 
-        // 1. FILTER
+        // Filter
         let filtered = allMatches.filter(m => {
             if (currentFilters.sport !== 'all' && m.category !== currentFilters.sport) return false;
-            
             const durationMins = CONFIG.sportDurations[m.category] || 180;
             const end = m.date + (durationMins * 60 * 1000);
             const is247 = m.date < startOfToday;
             const isLive = (m.viewers > 0) || (m.isLive) || (now >= m.date && now <= end);
-
-            // "Finished" Definition: Time passed, not 24/7, not live
             m.isRefFinished = (now > end) && !is247 && !isLive;
-
-            // If user explicitly wants only "LIVE" matches, hide finished
             if (currentFilters.live && !isLive) return false;
-            
             if (currentFilters.popular && !m.popular) return false;
             return true;
         });
 
-        // 2. SEPARATION LOGIC
         let finishedMatches = filtered.filter(m => m.isRefFinished);
         let activeMatches = filtered.filter(m => !m.isRefFinished);
 
-        // 3. EMPTY STATE CHECK (Active Matches Only)
         if (activeMatches.length === 0) {
             elements.msgContainer.style.display = 'block';
             elements.msgContainer.textContent = "No live or upcoming matches found.";
@@ -437,49 +420,37 @@ document.addEventListener("DOMContentLoaded", function() {
             elements.msgContainer.style.display = 'none';
         }
 
-        // 4. SORTING
-        finishedMatches.sort((a, b) => {
-            const dateDiff = b.date - a.date;
-            if (dateDiff !== 0) return dateDiff;
-            return a.title.localeCompare(b.title);
-        });
-
-        liveRanked = activeMatches.filter(m => m.viewers > 0);
+        finishedMatches.sort((a, b) => b.date - a.date || a.title.localeCompare(b.title));
+        let liveRanked = activeMatches.filter(m => m.viewers > 0).sort((a, b) => b.viewers - a.viewers || b.date - a.date);
         let others = activeMatches.filter(m => !m.viewers || m.viewers === 0);
-        let stream247 = others.filter(m => m.date < startOfToday);
-        let standardSchedule = others.filter(m => m.date >= startOfToday);
+        let stream247 = others.filter(m => m.date < startOfToday).sort((a, b) => b.date - a.date);
+        let standardSchedule = others.filter(m => m.date >= startOfToday).sort((a, b) => a.date - b.date);
 
-        liveRanked.sort((a, b) => {
-            const vDiff = b.viewers - a.viewers;
-            if (vDiff !== 0) return vDiff;
-            return b.date - a.date; 
-        });
-        stream247.sort((a, b) => b.date - a.date);
-        standardSchedule.sort((a, b) => a.date - b.date);
-
-        // 5. RENDERING MAIN CONTENT (Active Matches)
         const fragment = document.createDocumentFragment();
 
+        // --- 1. LIVE SECTION ---
         if (liveRanked.length > 0) {
             const section = document.createElement('div');
             section.className = 'date-section';
             section.innerHTML = `<h2 class="section-header">LIVE NOW</h2>`;
             const grid = document.createElement('div');
             grid.className = 'results-grid';
+            
+            // Inject Affiliate Card FIRST
+            grid.appendChild(createAffiliateCard());
+
             liveRanked.forEach(m => grid.appendChild(createMatchCard(m)));
             section.appendChild(grid);
             fragment.appendChild(section);
         }
 
+        // --- 2. UPCOMING DATES SECTION ---
         if (standardSchedule.length > 0) {
             const uniqueKeys = [];
             const todayStr = todayDateObj.toDateString();
-
             standardSchedule.forEach(m => {
                 const d = new Date(m.date);
-                let key;
-                if (d.toDateString() === todayStr) key = "TODAY";
-                else key = d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
+                let key = (d.toDateString() === todayStr) ? "TODAY" : d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
                 if(!uniqueKeys.includes(key)) uniqueKeys.push(key);
             });
 
@@ -490,26 +461,31 @@ document.addEventListener("DOMContentLoaded", function() {
                 const grid = document.createElement('div');
                 grid.className = 'results-grid';
                 
+                // Inject Affiliate Card FIRST in every date section
+                grid.appendChild(createAffiliateCard());
+
                 const ms = standardSchedule.filter(m => {
                     const d = new Date(m.date);
-                    let k;
-                    if (d.toDateString() === todayStr) k = "TODAY";
-                    else k = d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
+                    let k = (d.toDateString() === todayStr) ? "TODAY" : d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
                     return k === key;
                 });
-
                 ms.forEach(m => grid.appendChild(createMatchCard(m)));
                 section.appendChild(grid);
                 fragment.appendChild(section);
             });
         }
 
+        // --- 3. 24/7 STREAMS ---
         if (stream247.length > 0) {
             const section = document.createElement('div');
             section.className = 'date-section';
             section.innerHTML = `<h2 class="section-header">24/7 Live Streams</h2>`;
             const grid = document.createElement('div');
             grid.className = 'results-grid';
+            
+            // Inject Affiliate Card FIRST
+            grid.appendChild(createAffiliateCard());
+
             stream247.forEach(m => grid.appendChild(createMatchCard(m)));
             section.appendChild(grid);
             fragment.appendChild(section);
@@ -517,11 +493,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
         elements.matchesContainer.appendChild(fragment);
 
-        // 6. RENDERING FINISHED SECTION (Always Visible Button logic)
-        // Force display block for the container wrapper
-        elements.finishedSection.style.display = 'block'; 
-        
-        // Create the "Finished" header structure
+        // --- 4. FINISHED SECTION ---
+        elements.finishedSection.style.display = 'block';
         const finishedSectionDiv = document.createElement('div');
         finishedSectionDiv.className = 'date-section';
         finishedSectionDiv.innerHTML = `<h2 class="section-header">Finished</h2>`;
@@ -529,16 +502,24 @@ document.addEventListener("DOMContentLoaded", function() {
         if (finishedMatches.length > 0) {
             const grid = document.createElement('div');
             grid.className = 'results-grid';
+            
+            // Inject Affiliate Card FIRST in Finished too
+            grid.appendChild(createAffiliateCard());
+
             finishedMatches.forEach(m => grid.appendChild(createMatchCard(m)));
             finishedSectionDiv.appendChild(grid);
         } else {
-            // No finished matches available text
             const msg = document.createElement('div');
             msg.className = 'no-finished-msg';
             msg.textContent = "No recently finished match available.";
+            
+            // Even if no finished matches, show the ad if you want money? 
+            // Uncomment next lines if you want the ad to appear even with no finished matches
+            // const grid = document.createElement('div'); grid.className = 'results-grid';
+            // grid.appendChild(createAffiliateCard()); finishedSectionDiv.appendChild(grid);
+
             finishedSectionDiv.appendChild(msg);
         }
-        
         elements.finishedContainer.appendChild(finishedSectionDiv);
 
         // Lazy Load
@@ -554,14 +535,32 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             });
         });
-        const allImages = document.querySelectorAll('img.match-poster');
-        allImages.forEach(img => observer.observe(img));
+        document.querySelectorAll('img.match-poster').forEach(img => observer.observe(img));
         
         const sportName = currentFilters.sport === 'all' ? 'All Sports' : currentFilters.sport.toUpperCase();
         if(elements.categoryTitle) elements.categoryTitle.textContent = `${sportName} SCHEDULE`;
     }
 
-    // --- FINISHED TOGGLE LOGIC ---
+    // --- OTHER UI EVENTS ---
+    function populateCategoryDropdown() {
+        const sports = new Set(['all']);
+        allMatches.forEach(m => sports.add(m.category));
+        const priorities = ['football', 'basketball', 'american-football', 'fight', 'motor-sports', 'baseball', 'hockey'];
+        const sortedSports = [...sports].sort((a, b) => {
+            if(a === 'all') return -1; if(b === 'all') return 1;
+            const idxA = priorities.indexOf(a), idxB = priorities.indexOf(b);
+            if(idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if(idxA !== -1) return -1; if(idxB !== -1) return 1;
+            return a.localeCompare(b);
+        });
+        if(elements.categorySelect) {
+            elements.categorySelect.innerHTML = sortedSports.map(s => 
+                `<option value="${s}">${s === 'all' ? 'All Sports' : s.replace(/-/g, ' ').toUpperCase()}</option>`
+            ).join('');
+            elements.categorySelect.value = currentFilters.sport;
+        }
+    }
+
     if(elements.toggleFinishedBtn) {
         elements.toggleFinishedBtn.addEventListener('click', () => {
             const isHidden = elements.finishedContainer.style.display === 'none';
@@ -571,7 +570,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // --- EVENTS ---
     window.addEventListener("scroll", () => {
         if(elements.header) elements.header.classList.toggle("sticky", window.scrollY > 100);
     }, { passive: true });
@@ -581,13 +579,11 @@ document.addEventListener("DOMContentLoaded", function() {
         currentFilters.sport = params.get('sport') || 'all';
         currentFilters.live = params.get('live') === 'true';
         currentFilters.popular = params.get('popular') === 'true';
-        
         if(elements.categorySelect) elements.categorySelect.value = currentFilters.sport;
         const liveBtn = document.querySelector('[data-filter="live"]');
         const popBtn = document.querySelector('[data-filter="popular"]');
         if(liveBtn) liveBtn.classList.toggle('active', currentFilters.live);
         if(popBtn) popBtn.classList.toggle('active', currentFilters.popular);
-        
         updateActiveFilters();
         renderMatches();
     }
@@ -597,9 +593,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if(currentFilters.sport !== 'all') params.set('sport', currentFilters.sport);
         if(currentFilters.live) params.set('live', 'true');
         if(currentFilters.popular) params.set('popular', 'true');
-        
-        const newUrl = `${window.location.pathname}?${params.toString()}`;
-        history.replaceState(null, '', newUrl); 
+        history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`); 
         renderMatches();
         updateActiveFilters();
     }
@@ -647,7 +641,5 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     window.addEventListener('popstate', handleURLParams);
-
-    // Initial Load
     loadMatches();
 });
