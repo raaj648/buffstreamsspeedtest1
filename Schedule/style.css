@@ -4,7 +4,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--text-primary:#c9d1d9;--text-secondary:#8b949e;--accent-primary:#3a86ff;--accent-secondary:#00b4d8;--border-color:#30363d;--white:#fff;--accent-red:#e50914;--placeholder-bg:#21262d;--shimmer-color:rgba(255,255,255,0.05)}
 
-body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6; overflow-x: hidden;}
 a{text-decoration:none;color:inherit;transition:0.2s}
 main{display:block}
 
@@ -50,16 +50,6 @@ main{display:block}
 
 .fullpage { width: 90%; max-width: 1400px; margin: 0 auto; }
 #category-title { font-size: clamp(1.5rem, 3vw, 2rem); text-align: center; color: var(--white); text-transform: capitalize; margin: 1.5rem 0; }
-
-/* --- ADSTERRA WRAPPER --- */
-.adsterra-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 250px; /* Reduces CLS */
-    margin: 20px 0 10px 0;
-}
 
 /* Filter Bar */
 .filter-bar { position: sticky; top: 0px; z-index: 1000; padding: 0 0; transition: top 0.3s; }
@@ -129,15 +119,41 @@ body:has(.main-header.sticky) .filter-bar { top: 60px; }
 }
 
 /* GRID SYSTEM */
-.results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
+.results-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+    gap: 1.5rem; 
+    /* FIXED: Removed content-visibility and contain-intrinsic-size to correct layout heights */
+}
 
-.match-card { display: flex; flex-direction: column; background: var(--bg-secondary); border-radius: 12px; overflow: hidden; position: relative; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; height: 100%; text-decoration: none; color: inherit; }
+/* Match Card */
+.match-card { 
+    display: flex; 
+    flex-direction: column; 
+    background: var(--bg-secondary); 
+    border-radius: 12px; 
+    overflow: hidden; 
+    position: relative; 
+    border: 1px solid var(--border-color); 
+    transition: transform 0.2s, box-shadow 0.2s; 
+    height: 100%; 
+    text-decoration: none; 
+    color: inherit; 
+    /* FIXED: Removed 'contain: content' to fix hover shadows and flex layout issues */
+}
 .match-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); border-color: var(--accent-primary); }
-.match-poster { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--placeholder-bg); }
 
-/* --- AFFILIATE CARD STYLES (Native Ad Look) --- */
+.match-poster { 
+    width: 100%; 
+    height: auto; /* FIXED: This is crucial! Overrides HTML height="250" to maintain aspect ratio on small screens */
+    aspect-ratio: 16/9; 
+    object-fit: cover; 
+    background: var(--placeholder-bg); 
+}
+
+/* --- AFFILIATE CARD STYLES --- */
 .match-card.affiliate-card {
-    border: 1px solid #d4af37; /* Gold border */
+    border: 1px solid #d4af37;
     background: linear-gradient(145deg, #161b22, #1f252e);
 }
 .match-card.affiliate-card:hover {
@@ -199,20 +215,45 @@ footer{background:var(--bg-secondary);color:var(--text-secondary);padding:2rem 1
 .footer-menu{list-style:none;padding:0;display:flex;justify-content:center;flex-wrap:wrap;gap:15px;margin-bottom:20px;}
 .footer-menu a:hover{color:var(--accent-primary);}
 
-#sticky-ad-placeholder { display: none; height: 50px; }
-#sticky-footer-ad{position:fixed;bottom:0;left:0;width:100%;background:#161b22;padding:10px;z-index:9999;border-top:1px solid var(--border-color);display:flex;justify-content:center;align-items:center;box-shadow:0 -5px 15px rgba(0,0,0,0.5);}
+/* --- STICKY FOOTER OPTIMIZATIONS (FIX CLS) --- */
+/* Rigid Placeholder */
+.sticky-footer-placeholder {
+    display: none; /* Default hidden */
+    width: 100%;
+    flex-shrink: 0;
+}
+
+#sticky-footer-ad{
+    position:fixed; bottom:0; left:0; width:100%;
+    background:#161b22; padding:10px; z-index:9999;
+    border-top:1px solid var(--border-color);
+    display:flex; justify-content:center; align-items:center;
+    box-shadow:0 -5px 15px rgba(0,0,0,0.5);
+}
+
 .ad-content{display:flex;align-items:center;gap:10px;color:white;}
 .download-btn{background:var(--white);color:var(--bg-primary);padding:6px 16px;border-radius:20px;font-weight:bold;font-size:14px;}
 #close-ad{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;background:#333;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;}
 
 .mobile-ad { display: none; }
 .desktop-ad { display: none; }
-@media (min-width: 769px) { #sticky-ad-placeholder { display: block; } .desktop-ad { display: flex; } }
 
-@keyframes bounce {0%, 100% {transform: translateY(0);} 50% {transform: translateY(-5px);}}
-@keyframes pulseText {0%, 100% {opacity: 1;} 50% {opacity: 0.5;}}
+/* Desktop Logic (Heights must match) */
+@media (min-width: 769px) { 
+    .desktop-ad { display: flex; } 
+    #sticky-footer-ad, .sticky-footer-placeholder { 
+        height: 70px; /* Fixed height desktop */
+        display: flex; /* Placeholder becomes visible */
+    }
+}
+
+/* --- CLS-SAFE ANIMATIONS (No Reflows) --- */
+/* Changed from translateY to scale/opacity to avoid layout shifts */
+@keyframes bounce-scale {0%, 100% {transform: scale(1);} 50% {transform: scale(1.1);}}
+@keyframes pulseText {0%, 100% {opacity: 1;} 50% {opacity: 0.6;}}
 @keyframes buttonPulse {0% {transform: scale(1);} 100% {transform: scale(1.05);}}
-.emoji {animation: bounce 1s infinite;}
+
+.emoji {animation: bounce-scale 1.5s infinite;}
 .cta-text {animation: pulseText 2s infinite;}
 .download-btn {animation: buttonPulse 1.5s infinite alternate;}
 
@@ -225,9 +266,13 @@ footer{background:var(--bg-secondary);color:var(--text-secondary);padding:2rem 1
   .active-filters-container { display: flex; } 
   .filter-bar.is-expanded .active-filters-container { display: none; }
   
-  #sticky-ad-placeholder { display: block; }
+  /* Mobile Logic (Heights must match) */
+  #sticky-footer-ad, .sticky-footer-placeholder { 
+      height: 60px; /* Fixed height mobile */
+      display: flex; /* Placeholder becomes visible */
+  }
   .mobile-ad { display: flex; }
   .desktop-ad { display: none; }
-  footer { padding-bottom: 70px; }
+  footer { padding-bottom: 0; /* Padding handled by placeholder now */ }
   .section-header { padding-right: 170px; }
 }
