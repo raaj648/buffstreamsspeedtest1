@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("--- Buffstreams Pro Script V9 (Viewer Fix) ---");
+    console.log("--- Buffstreams Pro Script V10 (Final LCP & Logic Fix) ---");
 
     // =========================================================================
     // ===  CONFIGURATION  =====================================================
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
         apiBackup: 'https://topembed.pw/api.php?format=json',
         proxyUrl: 'https://corsproxy.io/?',
         bufferMinutes: 30, 
-        storageKey: 'buff_cache_v9_viewers',
+        storageKey: 'buff_v10_final',
         sportDurations: {
             'football': 130, 'basketball': 160, 'american-football': 200, 
             'baseball': 200, 'hockey': 160, 'fight': 240, 'motor-sports': 150, 
@@ -24,11 +24,14 @@ document.addEventListener("DOMContentLoaded", function() {
     let allMatches = []; 
     let currentFilters = { live: false, popular: false, sport: 'all' };
     
-    // Affiliate Configuration
+    // RESTORED GEO OFFERS WITH WORLDWIDE & DEFAULT
     const GEO_OFFERS = {
-        'US': { img: '../test.jpg', link: 'YOUR_USA_AFFILIATE_LINK_HERE', cta: 'Claim $500 Bonus', label: 'EXCLUSIVE' },
-        'GB': { img: '../test.jpg', link: 'YOUR_UK_AFFILIATE_LINK_HERE', cta: 'Bet £10 Get £30', label: 'UK SPECIAL' },
-        'default': { img: '../test.jpg', link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE', cta: 'Join & Win Big', label: 'SPONSORED' }
+        'US': { img: '../test.jpg', link: 'YOUR_USA_AFFILIATE_LINK_HERE', cta: 'Claim $500 Bonus', label: 'EXCLUSIVE', alt: 'USA Exclusive Bonus' },
+        'GB': { img: '../test.jpg', link: 'YOUR_UK_AFFILIATE_LINK_HERE', cta: 'Bet £10 Get £30', label: 'UK SPECIAL', alt: 'UK Betting Offer' },
+        'CA': { img: '../test.jpg', link: 'YOUR_CANADA_AFFILIATE_LINK_HERE', cta: 'Get $200 Free Bet', label: 'BONUS', alt: 'Canada Sports Bonus' },
+        'GR': { img: '../test.jpg', link: 'YOUR_GREECE_AFFILIATE_LINK_HERE', cta: 'Claim Bonus Now', label: 'OFFER', alt: 'Greece Welcome Bonus' },
+        'WORLDWIDE': { img: '../test.jpg', link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE', cta: 'Join & Win Big', label: 'SPONSORED', alt: 'Global Sports Betting Offer' },
+        'default': { img: '../test.jpg', link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE', cta: 'Join & Win Big', label: 'SPONSORED', alt: 'Global Sports Betting Offer' }
     };
     let currentAffiliateOffer = GEO_OFFERS['default'];
 
@@ -47,8 +50,6 @@ document.addEventListener("DOMContentLoaded", function() {
         toggleFinishedBtn: document.getElementById("toggle-finished-btn"),
         finishedBtnText: document.getElementById("finished-btn-text")
     };
-
-    if (!elements.matchesContainer) return;
 
     // =========================================================================
     // ===  UTILITIES & HELPERS  ===============================================
@@ -78,9 +79,9 @@ document.addEventListener("DOMContentLoaded", function() {
         return normalizeCategory(category) + "_" + s.replace(/[^a-z0-9]/g, ''); 
     };
 
-    // Strict expiry check: If match finished > 30 mins ago AND has 0 viewers -> Remove
+    // Strict expiry check
     function isMatchExpired(match) {
-        if (match.viewers > 0) return false; // Never expire if watching
+        if (match.viewers > 0) return false; 
         const nowSec = Date.now() / 1000;
         const startSec = match.date / 1000;
         const durationMins = CONFIG.sportDurations[match.category] || 180;
@@ -89,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // =========================================================================
-    // ===  GEO LOGIC  =========================================================
+    // ===  GEO LOGIC (Hydrates the Hardcoded Card)  ===========================
     // =========================================================================
     async function initGeoLogic() {
         try {
@@ -97,30 +98,49 @@ document.addEventListener("DOMContentLoaded", function() {
             try { country = await fetch('https://get.geojs.io/v1/ip/country.json').then(r=>r.json()).then(d=>d.country); }
             catch { try { country = await fetch('https://api.country.is').then(r=>r.json()).then(d=>d.country); } catch(e){} }
 
-            if (country && GEO_OFFERS[country.toUpperCase()]) {
-                currentAffiliateOffer = GEO_OFFERS[country.toUpperCase()];
-                document.querySelectorAll('.match-card.affiliate-card').forEach(c => c.replaceWith(createAffiliateCard()));
-            }
-        } catch (e) { console.warn("Geo failed"); }
+            const code = country ? country.toUpperCase() : 'DEFAULT';
+            // Use specific country if exists, otherwise Worldwide, otherwise Default
+            if (GEO_OFFERS[code]) currentAffiliateOffer = GEO_OFFERS[code];
+            else currentAffiliateOffer = GEO_OFFERS['WORLDWIDE'] || GEO_OFFERS['default'];
+
+            // HYDRATE THE EXISTING DOM CARD (LCP FIX)
+            updateAffiliateCardDOM(document.getElementById('lcp-affiliate-card'));
+            
+            // Also update any others (in finished section etc)
+            document.querySelectorAll('.match-card.affiliate-card').forEach(c => {
+                if(c.id !== 'lcp-affiliate-card') c.replaceWith(createAffiliateCard());
+            });
+
+        } catch (e) { console.warn("Geo failed", e); }
+    }
+
+    function updateAffiliateCardDOM(card) {
+        if(!card) return;
+        card.href = currentAffiliateOffer.link;
+        const img = card.querySelector('img');
+        if(img) {
+            img.src = currentAffiliateOffer.img;
+            img.alt = currentAffiliateOffer.alt;
+        }
+        const badgeSpan = card.querySelector('.status-badge span');
+        if(badgeSpan) badgeSpan.textContent = currentAffiliateOffer.label;
+        const title = card.querySelector('.match-title');
+        if(title) title.textContent = currentAffiliateOffer.cta;
     }
 
     // =========================================================================
-    // ===  CORE VIEWER LOGIC (FROM YOUR REFERENCE)  ===========================
+    // ===  CORE VIEWER LOGIC (Double API / Promise.allSettled)  ===============
     // =========================================================================
     async function fetchAndUpdateViewers() {
         const now = Date.now();
-        // 1. Identify matches that SHOULD be checked (Started or about to start)
-        // We do not check matches far in the future to save resources
         const liveMatchesForApiCall = allMatches.filter(match => {
             if (match.source !== 'primary' || !match.sources || match.sources.length === 0) return false;
-            // Check if match is started or starts in next 30 mins
+            // Check matches starting soon or already started
             return match.date <= (now + 1800000); 
         });
 
         if (liveMatchesForApiCall.length === 0) return;
 
-        // 2. Fetch all streams (Parallel requests using Promise.allSettled)
-        // This logic is adapted exactly from your reference to sum up viewers correctly
         const streamFetchPromises = liveMatchesForApiCall.flatMap(match =>
             match.sources.map(source =>
                 fetch(`${CONFIG.apiPrimary}/stream/${source.source}/${source.id}`)
@@ -133,15 +153,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const results = await Promise.allSettled(streamFetchPromises);
         const viewerCounts = {};
 
-        // 3. Aggregate Viewers
         results.forEach(result => {
             if (result.status === 'fulfilled' && result.value) {
                 const { matchId, streams } = result.value;
                 if (!viewerCounts[matchId]) viewerCounts[matchId] = 0;
-                
                 if (Array.isArray(streams)) {
                     streams.forEach(stream => {
-                        // THIS IS THE CRITICAL LOGIC FROM REFERENCE
                         if (stream.viewers && typeof stream.viewers === 'number') {
                             viewerCounts[matchId] += stream.viewers;
                         }
@@ -150,23 +167,18 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        // 4. Update Data & Re-render
         let needsRerender = false;
         Object.keys(viewerCounts).forEach(matchId => {
             const totalViewers = viewerCounts[matchId];
             const matchInArray = allMatches.find(m => m.id == matchId);
-            
-            // If viewers changed significantly or went from 0 to >0
             if (matchInArray && matchInArray.viewers !== totalViewers) {
                 matchInArray.viewers = totalViewers;
-                // Force live status if viewers exist
                 if(totalViewers > 0) matchInArray.isLive = true; 
                 needsRerender = true;
             }
         });
 
         if (needsRerender) {
-            console.log("Viewers updated, re-sorting...");
             renderMatches(true);
         }
     }
@@ -251,17 +263,15 @@ document.addEventListener("DOMContentLoaded", function() {
     // =========================================================================
     async function initApp() {
         initGeoLogic();
+        setupEventListeners(); // Ensure listeners are attached
         handleURLParams();
 
-        // 1. Load Cache (Instant Paint)
+        // 1. Load Cache
         try {
             const cached = localStorage.getItem(CONFIG.storageKey);
             if(cached) {
                 allMatches = JSON.parse(cached);
-                renderMatches();
-                if(elements.skeletonLoader) elements.skeletonLoader.style.display = 'none';
-            } else {
-                if(elements.skeletonLoader) elements.skeletonLoader.style.display = 'block';
+                renderMatches(); 
             }
         } catch(e){}
 
@@ -271,13 +281,14 @@ document.addEventListener("DOMContentLoaded", function() {
             allMatches = primary;
             localStorage.setItem(CONFIG.storageKey, JSON.stringify(allMatches));
             renderMatches();
+            // Important: Populate dropdown AFTER data is loaded
+            populateCategoryDropdown();
         }
 
-        // 3. IMMEDIATE VIEWER CHECK (The Fix)
-        // We run this immediately after primary load to fix sorting ASAP
+        // 3. Immediate Viewer Check
         await fetchAndUpdateViewers();
 
-        // 4. Fetch Backup (Lazy)
+        // 4. Fetch Backup
         setTimeout(async () => {
             const backup = await fetchBackupAPI();
             if(backup.length > 0) {
@@ -289,12 +300,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
                 allMatches = merged;
                 renderMatches(true);
+                populateCategoryDropdown(); // Update dropdown with new sports if any
             }
         }, 3000);
     }
 
     // =========================================================================
-    // ===  RENDERER (STRICT SORTING)  =========================================
+    // ===  RENDERER (LOGIC FIXED)  ============================================
     // =========================================================================
     function createMatchCard(match, index) {
         const card = document.createElement('a');
@@ -305,6 +317,7 @@ document.addEventListener("DOMContentLoaded", function() {
         img.className = 'match-poster';
         img.width = 444; img.height = 250;
         img.alt = match.title;
+        // First 3 eager, rest lazy
         if(index < 3) {
             img.loading = "eager"; img.fetchPriority = "high"; img.src = match.posterUrl;
         } else {
@@ -316,10 +329,14 @@ document.addEventListener("DOMContentLoaded", function() {
         const now = Date.now();
         const duration = (CONFIG.sportDurations[match.category] || 180) * 60 * 1000;
         const end = match.date + duration;
-        const is247 = match.date < new Date().setHours(0,0,0,0) && match.viewers === 0;
-
+        
         let badgeHtml = '';
         let badgeClass = '';
+
+        // LOGIC REFINEMENT FOR BADGES
+        // Note: The grouping logic in renderMatches handles where it goes. 
+        // This just handles how it LOOKS.
+        const is247 = (match.isCalc247); 
 
         if (match.viewers > 0) {
             badgeClass = 'status-badge viewer-badge';
@@ -365,7 +382,7 @@ document.addEventListener("DOMContentLoaded", function() {
         card.className = 'match-card affiliate-card';
         card.innerHTML = `
             <div class="status-badge" style="background:linear-gradient(90deg,#d4af37,#f2d06b);color:#000;"><span>${currentAffiliateOffer.label}</span></div>
-            <img class="match-poster" src="${currentAffiliateOffer.img}" width="444" height="250" loading="eager">
+            <img class="match-poster" src="${currentAffiliateOffer.img}" width="444" height="250" alt="${currentAffiliateOffer.alt}" loading="eager">
             <div class="match-info">
                 <div class="match-title" style="color:#d4af37;">${currentAffiliateOffer.cta}</div>
                 <div class="match-meta-row"><span class="match-category">BETTING</span><span>Verified Offer</span></div>
@@ -387,43 +404,41 @@ document.addEventListener("DOMContentLoaded", function() {
             const duration = (CONFIG.sportDurations[m.category] || 180) * 60 * 1000;
             const end = m.date + duration;
             
-            // Logic based on reference script: Live if Viewers > 0 OR (Time <= Now)
-            // But we use viewers as the primary "Live" indicator for sorting
             const isTimeLive = (now >= m.date && now <= end);
             m.isCalcLive = (m.viewers > 0) || isTimeLive;
-            m.isCalcFinished = (now > end) && !m.isCalcLive;
-            // 24/7 check
-            if(m.date < todayTime && !m.isCalcFinished && m.viewers === 0) m.isCalc247 = true;
+            
+            // 24/7 LOGIC: Date < Today AND Not Live.
+            // If it's old but has viewers, it's LIVE (handled above).
+            // If it's old and NO viewers, it's 24/7.
+            if(m.date < todayTime && !m.isCalcLive) {
+                m.isCalc247 = true;
+                m.isCalcFinished = false; // It's 24/7, not "Finished"
+            } else {
+                m.isCalc247 = false;
+                m.isCalcFinished = (now > end) && !m.isCalcLive;
+            }
 
             if(currentFilters.live && !m.isCalcLive) return false;
             if(currentFilters.popular && !m.popular) return false;
             return true;
         });
 
-        // 2. SORTING (CRITICAL FIX)
-        
-        // Group A: Live with Viewers (Highest Priority)
-        let groupViewers = filtered.filter(m => m.viewers > 0 && !m.isCalc247);
-        // Sort: Most viewers first. Tie-breaker: Start date.
-        groupViewers.sort((a,b) => {
-            if(b.viewers !== a.viewers) return b.viewers - a.viewers;
-            return a.date - b.date;
-        });
+        // 2. GROUPING & SORTING
+        let groupViewers = filtered.filter(m => m.viewers > 0);
+        groupViewers.sort((a,b) => b.viewers - a.viewers || a.date - b.date);
 
-        // Group B: Live by Time (No viewers yet)
-        let groupLiveTime = filtered.filter(m => m.isCalcLive && m.viewers === 0 && !m.isCalc247);
-        groupLiveTime.sort((a,b) => a.date - b.date); // Starting soonest first
+        // Matches that should be live by time but have 0 viewers
+        let groupLiveTime = filtered.filter(m => m.isCalcLive && m.viewers === 0);
+        groupLiveTime.sort((a,b) => a.date - b.date);
 
-        // Group C: Upcoming (Today & Future)
         let groupUpcoming = filtered.filter(m => !m.isCalcLive && !m.isCalcFinished && !m.isCalc247);
         groupUpcoming.sort((a,b) => a.date - b.date);
 
-        // Group D: Finished
-        let groupFinished = filtered.filter(m => m.isCalcFinished && !m.isCalc247);
+        let groupFinished = filtered.filter(m => m.isCalcFinished);
         groupFinished.sort((a,b) => b.date - a.date);
 
-        // Group E: 24/7
         let group247 = filtered.filter(m => m.isCalc247);
+        group247.sort((a,b) => b.date - a.date); // Sort 24/7 by newest old date? or random? usually date.
 
         // 3. DOM CONSTRUCTION
         const frag = document.createDocumentFragment();
@@ -434,16 +449,24 @@ document.addEventListener("DOMContentLoaded", function() {
             sec.innerHTML = `<h2 class="section-header">${title}</h2>`;
             const grid = document.createElement('div');
             grid.className = 'results-grid';
-            if(isTop) grid.appendChild(createAffiliateCard());
+            
+            // Re-inject Affiliate Card if it's the top section
+            if(isTop) {
+                // If we are re-rendering, we create a new DOM element for the affiliate card
+                // to ensure it sits in the grid correctly.
+                grid.appendChild(createAffiliateCard());
+            }
+
             list.forEach((m, i) => grid.appendChild(createMatchCard(m, isTop ? i : 99)));
             sec.appendChild(grid);
             frag.appendChild(sec);
         };
 
-        // Combine Viewers + LiveTime into "LIVE NOW"
+        // Live Section
         let allLive = [...groupViewers, ...groupLiveTime];
         if(allLive.length > 0) appendSection("LIVE NOW", allLive, true);
 
+        // Upcoming
         if(groupUpcoming.length > 0) {
             const grouped = {};
             const todayStr = startOfToday.toDateString();
@@ -460,18 +483,20 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
+        // 24/7 Section
         if(group247.length > 0) appendSection("24/7 Live Streams", group247, false);
 
         elements.matchesContainer.innerHTML = '';
         if(filtered.length === 0) {
             elements.msgContainer.style.display = 'block';
+            elements.msgContainer.textContent = "No matches found.";
         } else {
             elements.msgContainer.style.display = 'none';
             elements.matchesContainer.appendChild(frag);
         }
         if(elements.skeletonLoader) elements.skeletonLoader.style.display = 'none';
 
-        // Finished
+        // Finished Section (Hidden by default)
         if(elements.finishedContainer) {
             elements.finishedContainer.innerHTML = '';
             if(groupFinished.length > 0) {
@@ -492,7 +517,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        // Lazy Images
+        // Lazy Observer
         const obs = new IntersectionObserver(entries => {
             entries.forEach(e => {
                 if(e.isIntersecting && e.target.dataset.src) {
@@ -504,18 +529,57 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         document.querySelectorAll('img[data-src]').forEach(i => obs.observe(i));
 
-        if(elements.categoryTitle) {
-            elements.categoryTitle.textContent = (currentFilters.sport === 'all' ? 'All Sports' : currentFilters.sport.toUpperCase()) + " SCHEDULE";
-        }
+        // TITLE UPDATE
+        const sportName = currentFilters.sport === 'all' ? 'All Sports' : currentFilters.sport.replace(/-/g, ' ').replace(/\b\w/g, c=>c.toUpperCase());
+        const pageTitle = `buffstreams.world ${sportName} Schedule & Streams`;
+        if(elements.categoryTitle) elements.categoryTitle.textContent = `${sportName} Schedule`;
+        document.title = pageTitle;
     }
 
     // =========================================================================
-    // ===  EVENTS & UI  =======================================================
+    // ===  EVENTS & UI HANDLERS  ==============================================
     // =========================================================================
+    function setupEventListeners() {
+        if(elements.toggleFinishedBtn) {
+            // Remove old listeners to prevent duplicates if init runs twice
+            const newBtn = elements.toggleFinishedBtn.cloneNode(true);
+            elements.toggleFinishedBtn.parentNode.replaceChild(newBtn, elements.toggleFinishedBtn);
+            elements.toggleFinishedBtn = newBtn; // update reference
+
+            elements.toggleFinishedBtn.addEventListener('click', () => {
+                const isHidden = elements.finishedContainer.style.display === 'none';
+                elements.finishedContainer.style.display = isHidden ? 'block' : 'none';
+                elements.toggleFinishedBtn.classList.toggle('active', isHidden);
+                elements.finishedBtnText.textContent = isHidden ? "Hide Finished Matches" : "Check Finished Matches";
+            });
+        }
+
+        if(elements.categorySelect) {
+             elements.categorySelect.addEventListener('change', (e) => {
+                currentFilters.sport = e.target.value;
+                updateURL();
+            });
+        }
+
+        if(elements.filterToggleBtn) {
+            elements.filterToggleBtn.addEventListener('click', () => elements.filterBar.classList.toggle('is-expanded'));
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const k = e.target.dataset.filter;
+                currentFilters[k] = !currentFilters[k];
+                e.target.classList.toggle('active');
+                updateURL();
+            });
+        });
+    }
+
     function populateCategoryDropdown() {
-        if(!elements.categorySelect) return;
+        if(!elements.categorySelect || allMatches.length === 0) return;
         const s = new Set(['all']);
         allMatches.forEach(m => s.add(m.category));
+        
         const prio = ['football','basketball','american-football','fight','motor-sports','baseball','hockey'];
         const list = [...s].sort((a,b) => {
             if(a==='all') return -1; if(b==='all') return 1;
@@ -524,17 +588,17 @@ document.addEventListener("DOMContentLoaded", function() {
             if(ia!==-1) return -1; if(ib!==-1) return 1;
             return a.localeCompare(b);
         });
-        elements.categorySelect.innerHTML = list.map(v => `<option value="${v}">${v==='all'?'All Sports':v.toUpperCase()}</option>`).join('');
-        elements.categorySelect.value = currentFilters.sport;
-    }
 
-    if(elements.toggleFinishedBtn) {
-        elements.toggleFinishedBtn.addEventListener('click', () => {
-            const isHidden = elements.finishedContainer.style.display === 'none';
-            elements.finishedContainer.style.display = isHidden ? 'block' : 'none';
-            elements.toggleFinishedBtn.classList.toggle('active', isHidden);
-            elements.finishedBtnText.textContent = isHidden ? "Hide Finished Matches" : "Check Finished Matches";
-        });
+        // Save current selection
+        const currentVal = elements.categorySelect.value || currentFilters.sport;
+        
+        elements.categorySelect.innerHTML = list.map(v => 
+            `<option value="${v}" ${v === currentFilters.sport ? 'selected' : ''}>
+                ${v==='all'?'All Sports':v.replace(/-/g, ' ').toUpperCase()}
+            </option>`
+        ).join('');
+        
+        elements.categorySelect.value = currentFilters.sport;
     }
 
     let ticking = false;
@@ -553,13 +617,14 @@ document.addEventListener("DOMContentLoaded", function() {
         currentFilters.sport = p.get('sport') || 'all';
         currentFilters.live = p.get('live') === 'true';
         currentFilters.popular = p.get('popular') === 'true';
+        
         if(elements.categorySelect) elements.categorySelect.value = currentFilters.sport;
+        
         document.querySelectorAll('.filter-btn').forEach(b => {
             if(b.dataset.filter === 'live') b.classList.toggle('active', currentFilters.live);
             if(b.dataset.filter === 'popular') b.classList.toggle('active', currentFilters.popular);
         });
         updateActiveFilters();
-        renderMatches();
     }
 
     function updateURL() {
@@ -591,26 +656,6 @@ document.addEventListener("DOMContentLoaded", function() {
         if(currentFilters.live) add('Live', 'live');
         if(currentFilters.popular) add('Popular', 'popular');
     }
-
-    if(elements.categorySelect) {
-        elements.categorySelect.addEventListener('change', (e) => {
-            currentFilters.sport = e.target.value;
-            updateURL();
-        });
-    }
-
-    if(elements.filterToggleBtn) {
-        elements.filterToggleBtn.addEventListener('click', () => elements.filterBar.classList.toggle('is-expanded'));
-    }
-
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const k = e.target.dataset.filter;
-            currentFilters[k] = !currentFilters[k];
-            e.target.classList.toggle('active');
-            updateURL();
-        });
-    });
 
     window.addEventListener('popstate', handleURLParams);
 
