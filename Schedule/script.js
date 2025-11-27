@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("--- Buffstreams Pro Script V11 (Final Logic) ---");
+    console.log("--- Buffstreams Pro Script V12 (No Time on 24/7) ---");
 
     // =========================================================================
     // ===  CONFIGURATION  =====================================================
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
         apiBackup: 'https://topembed.pw/api.php?format=json',
         proxyUrl: 'https://corsproxy.io/?',
         bufferMinutes: 30, 
-        storageKey: 'buff_v11_final',
+        storageKey: 'buff_v12_final',
         sportDurations: {
             'football': 130, 'basketball': 160, 'american-football': 200, 
             'baseball': 200, 'hockey': 160, 'fight': 240, 'motor-sports': 150, 
@@ -93,9 +93,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const removalSec = startSec + (durationMins * 60) + (CONFIG.bufferMinutes * 60);
         
         // 24/7 LOGIC EXCEPTION:
-        // If it's a Primary API match and the date is in the past (before today),
-        // we normally keep it as a 24/7 stream UNLESS strict time rules apply?
-        // Actually, 24/7 streams are "old" matches provided by the API.
         // If source is Primary and date < Today, DO NOT EXPIRE.
         const startOfTodaySec = new Date().setHours(0,0,0,0) / 1000;
         if (match.source === 'primary' && startSec < startOfTodaySec) {
@@ -335,9 +332,6 @@ document.addEventListener("DOMContentLoaded", function() {
         let badgeHtml = '';
         let badgeClass = '';
 
-        // Note: m.isCalc... properties are set in renderMatches below
-        // This is purely for visual display based on those properties
-        
         if (match.viewers > 0) {
             badgeClass = 'status-badge viewer-badge';
             badgeHtml = `<span>${formatViewers(match.viewers)}</span><svg class="viewer-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
@@ -347,8 +341,12 @@ document.addEventListener("DOMContentLoaded", function() {
         } else if (match.isCalcFinished) {
             badgeClass = 'status-badge finished';
             badgeHtml = `<span>FINISHED</span>`;
+        } else if (match.isCalc247) {
+            // FIX: Replaced Time with "24/7" static label
+            badgeClass = 'status-badge date';
+            badgeHtml = `<span>24/7</span>`;
         } else {
-            // Default Date
+            // Default Date (Upcoming)
             badgeClass = 'status-badge date';
             badgeHtml = new Date(match.date).toLocaleTimeString([], {hour:'numeric', minute:'2-digit', hour12:true});
         }
@@ -528,8 +526,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 sec.appendChild(grid);
                 elements.finishedContainer.appendChild(sec);
             } else {
-                // If no finished matches, hide the main section wrapper or show message
-                // Currently hiding to keep clean
                 elements.finishedSection.style.display = 'none'; 
             }
         }
