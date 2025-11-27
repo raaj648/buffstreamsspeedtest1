@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("--- Buffstreams Pro Script V12 (No Time on 24/7) ---");
+    console.log("--- Buffstreams Pro Script V13 (Layout & Logic Final) ---");
 
     // =========================================================================
     // ===  CONFIGURATION  =====================================================
@@ -9,22 +9,22 @@ document.addEventListener("DOMContentLoaded", function() {
         apiBackup: 'https://topembed.pw/api.php?format=json',
         proxyUrl: 'https://corsproxy.io/?',
         bufferMinutes: 30, 
-        storageKey: 'buff_v12_final',
+        storageKey: 'buff_v13_final',
         sportDurations: {
-            'football': 150,          // 2h 30m (Soccer: 90m + 15m HT + 15m Delay + 30m Extra Time safety)
-            'basketball': 180,        // 3h 00m (NBA games often hit 2h 30m + delays)
-            'american-football': 225, // 3h 45m (NFL avg is 3h 12m, but delays/OT push it)
-            'baseball': 210,          // 3h 30m (Pitch clock makes games shorter, this is very safe)
-            'hockey': 185,            // 3h 05m (NHL Regular season + OT/Shootout safety)
-            'fight': 300,             // 5h 00m (UFC/Boxing Main Cards usually last 4-5 hours)
-            'boxing': 120,            // 2h 00m (If single fight)
-            'mma': 120,               // 2h 00m (If single fight)
-            'motor-sports': 180,      // 3h 00m (F1 Max time limit is 3h including red flags)
-            'tennis': 240,            // 4h 00m (Grand slams can go long)
-            'cricket': 480,           // 8h 00m (ODIs/T20s. Tests handled by date)
-            'golf': 480,              // 8h 00m (Tournaments run all day)
+            'football': 150,          // 2h 30m 
+            'basketball': 180,        // 3h 00m
+            'american-football': 225, // 3h 45m 
+            'baseball': 210,          // 3h 30m 
+            'hockey': 185,            // 3h 05m 
+            'fight': 300,             // 5h 00m 
+            'boxing': 120,            // 2h 00m 
+            'mma': 120,               // 2h 00m 
+            'motor-sports': 180,      // 3h 00m 
+            'tennis': 240,            // 4h 00m 
+            'cricket': 480,           // 8h 00m 
+            'golf': 480,              // 8h 00m 
             'rugby': 140,             // 2h 20m
-            'other': 180              // 3h 00m Default safety
+            'other': 180              // 3h 00m 
         }
     };
 
@@ -88,22 +88,16 @@ document.addEventListener("DOMContentLoaded", function() {
         return normalizeCategory(category) + "_" + s.replace(/[^a-z0-9]/g, ''); 
     };
 
-    // =========================================================================
-    // ===  LOGIC: Expiry & Categorization  ====================================
-    // =========================================================================
-    
     // Check if match should be removed from memory completely
     function isMatchExpired(match) {
-        if (match.viewers > 0) return false; // Never expire if watching
+        if (match.viewers > 0) return false; 
 
         const nowSec = Date.now() / 1000;
         const startSec = match.date / 1000;
         const durationMins = CONFIG.sportDurations[match.category] || 180;
-        // The point where it is considered "Removed from Finished Section"
         const removalSec = startSec + (durationMins * 60) + (CONFIG.bufferMinutes * 60);
         
-        // 24/7 LOGIC EXCEPTION:
-        // If source is Primary and date < Today, DO NOT EXPIRE.
+        // 24/7 LOGIC EXCEPTION (Primary sources old dates kept)
         const startOfTodaySec = new Date().setHours(0,0,0,0) / 1000;
         if (match.source === 'primary' && startSec < startOfTodaySec) {
             return false;
@@ -338,9 +332,12 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         img.onerror = function() { this.src = "../Fallbackimage.webp"; this.onerror = null; };
 
-        // Badge Display Logic
+        // --- BADGE & META LOGIC ---
         let badgeHtml = '';
         let badgeClass = '';
+        
+        // Calculate Time String first
+        const timeStr = new Date(match.date).toLocaleTimeString([], {hour:'numeric', minute:'2-digit', hour12:true}).toLowerCase(); // e.g. "07:30 pm"
 
         if (match.viewers > 0) {
             badgeClass = 'status-badge viewer-badge';
@@ -352,13 +349,13 @@ document.addEventListener("DOMContentLoaded", function() {
             badgeClass = 'status-badge finished';
             badgeHtml = `<span>FINISHED</span>`;
         } else if (match.isCalc247) {
-            // FIX: Replaced Time with "24/7" static label
+            // FIX: Show "24/7" badge instead of time
             badgeClass = 'status-badge date';
             badgeHtml = `<span>24/7</span>`;
         } else {
             // Default Date (Upcoming)
             badgeClass = 'status-badge date';
-            badgeHtml = new Date(match.date).toLocaleTimeString([], {hour:'numeric', minute:'2-digit', hour12:true});
+            badgeHtml = timeStr;
         }
 
         const badgeDiv = document.createElement('div');
@@ -377,7 +374,17 @@ document.addEventListener("DOMContentLoaded", function() {
         
         const info = document.createElement('div');
         info.className = 'match-info';
-        const meta = match.isCalc247 ? "24/7 Stream" : (match.viewers > 0 ? "Started" : new Date(match.date).toLocaleDateString());
+        
+        // FIX: Start Time Format Logic
+        let meta;
+        if (match.isCalc247) {
+            meta = "24/7 Stream";
+        } else if (match.viewers > 0 || match.isCalcLive || match.isCalcFinished) {
+            meta = `Started: ${timeStr}`;
+        } else {
+            meta = new Date(match.date).toLocaleDateString();
+        }
+
         info.innerHTML = `<div class="match-title">${match.title}</div><div class="match-meta-row"><span class="match-category">${match.category}</span><span>${meta}</span></div>`;
         card.appendChild(info);
 
@@ -412,33 +419,21 @@ document.addEventListener("DOMContentLoaded", function() {
             
             const duration = (CONFIG.sportDurations[m.category] || 180) * 60 * 1000;
             const end = m.date + duration;
-            // The buffer end is when it is completely removed from Finished list
             const bufferEnd = end + (CONFIG.bufferMinutes * 60 * 1000);
             
-            // --- LIVE LOGIC ---
-            // It is LIVE if: Viewers > 0 OR Time is within [Start, End]
             const isTimeLive = (now >= m.date && now <= end);
             m.isCalcLive = (m.viewers > 0) || isTimeLive;
             
-            // --- FINISHED LOGIC ---
-            // It is FINISHED if: Not Live AND Time > End AND Time <= BufferEnd
-            // IMPORTANT: If it's a 24/7 match (old date from primary), it is NOT finished.
-            // 24/7 Logic: Primary Source AND Start Date < Today AND Not Live.
             const isCandidate247 = (m.source === 'primary' && m.date < todayTime);
 
             if (m.isCalcLive) {
                 m.isCalcFinished = false;
                 m.isCalc247 = false;
             } else if (isCandidate247) {
-                // If it's an old primary match and not live, it's 24/7
                 m.isCalc247 = true;
                 m.isCalcFinished = false;
             } else {
-                // Standard Match
                 m.isCalc247 = false;
-                // It is finished if time > end AND within buffer
-                // Note: The isMatchExpired function during fetch already removes matches > bufferEnd
-                // So if it exists here and is not live, it is likely finished.
                 m.isCalcFinished = (now > end); 
             }
 
@@ -447,25 +442,20 @@ document.addEventListener("DOMContentLoaded", function() {
             return true;
         });
 
-        // 2. SORTING & GROUPING
+        // 2. SORTING
         let groupViewers = filtered.filter(m => m.viewers > 0);
         groupViewers.sort((a,b) => b.viewers - a.viewers || a.date - b.date);
 
-        // Live by Time
         let groupLiveTime = filtered.filter(m => m.isCalcLive && m.viewers === 0);
         groupLiveTime.sort((a,b) => a.date - b.date);
 
-        // Upcoming
         let groupUpcoming = filtered.filter(m => !m.isCalcLive && !m.isCalcFinished && !m.isCalc247);
         groupUpcoming.sort((a,b) => a.date - b.date);
 
-        // Finished
         let groupFinished = filtered.filter(m => m.isCalcFinished);
-        groupFinished.sort((a,b) => b.date - a.date); // Newest finished first
+        groupFinished.sort((a,b) => b.date - a.date); 
 
-        // 24/7
         let group247 = filtered.filter(m => m.isCalc247);
-        // Sort 24/7 to keep list stable, maybe alphabetical or date
         group247.sort((a,b) => b.date - a.date); 
 
         // 3. DOM CONSTRUCTION
@@ -485,11 +475,9 @@ document.addEventListener("DOMContentLoaded", function() {
             frag.appendChild(sec);
         };
 
-        // Live
         let allLive = [...groupViewers, ...groupLiveTime];
         if(allLive.length > 0) appendSection("LIVE NOW", allLive, true);
 
-        // Upcoming
         if(groupUpcoming.length > 0) {
             const grouped = {};
             const todayStr = startOfToday.toDateString();
@@ -506,7 +494,6 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
-        // 24/7 Section
         if(group247.length > 0) appendSection("24/7 Live Streams", group247, false);
 
         elements.matchesContainer.innerHTML = '';
@@ -519,12 +506,10 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         if(elements.skeletonLoader) elements.skeletonLoader.style.display = 'none';
 
-        // Finished Section
         if(elements.finishedContainer) {
             elements.finishedContainer.innerHTML = '';
-            // Only show button if there are actually finished matches
             if(groupFinished.length > 0) {
-                elements.finishedSection.style.display = 'block'; // Ensure parent container is visible
+                elements.finishedSection.style.display = 'block'; 
                 
                 const sec = document.createElement('div');
                 sec.className = 'date-section';
@@ -540,7 +525,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        // Lazy Observer
         const obs = new IntersectionObserver(entries => {
             entries.forEach(e => {
                 if(e.isIntersecting && e.target.dataset.src) {
@@ -552,16 +536,12 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         document.querySelectorAll('img[data-src]').forEach(i => obs.observe(i));
 
-        // TITLE UPDATE
         const sportName = currentFilters.sport === 'all' ? 'All Sports' : currentFilters.sport.replace(/-/g, ' ').replace(/\b\w/g, c=>c.toUpperCase());
         const pageTitle = `buffstreams.world ${sportName} schedule and livestreams`;
         if(elements.categoryTitle) elements.categoryTitle.textContent = `${sportName} Schedule`;
         document.title = pageTitle;
     }
 
-    // =========================================================================
-    // ===  EVENTS & UI HANDLERS  ==============================================
-    // =========================================================================
     function setupEventListeners() {
         if(elements.toggleFinishedBtn) {
             const newBtn = elements.toggleFinishedBtn.cloneNode(true);
@@ -678,7 +658,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     window.addEventListener('popstate', handleURLParams);
 
-    // Mobile Sidebar
     const sb = {
         t: document.getElementById('mobile-toggle'),
         s: document.getElementById('mobile-sidebar'),
@@ -694,4 +673,3 @@ document.addEventListener("DOMContentLoaded", function() {
 
     initApp();
 });
-
