@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("--- Buffstreams Pro Script V10 (Final LCP & Logic Fix) ---");
+    console.log("--- Buffstreams Pro Script V11 (Final Logic) ---");
 
     // =========================================================================
     // ===  CONFIGURATION  =====================================================
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
         apiBackup: 'https://topembed.pw/api.php?format=json',
         proxyUrl: 'https://corsproxy.io/?',
         bufferMinutes: 30, 
-        storageKey: 'buff_v10_final',
+        storageKey: 'buff_v11_final',
         sportDurations: {
             'football': 130, 'basketball': 160, 'american-football': 200, 
             'baseball': 200, 'hockey': 160, 'fight': 240, 'motor-sports': 150, 
@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", function() {
     let allMatches = []; 
     let currentFilters = { live: false, popular: false, sport: 'all' };
     
-    // RESTORED GEO OFFERS WITH WORLDWIDE & DEFAULT
     const GEO_OFFERS = {
         'US': { img: '../test.jpg', link: 'YOUR_USA_AFFILIATE_LINK_HERE', cta: 'Claim $500 Bonus', label: 'EXCLUSIVE', alt: 'USA Exclusive Bonus' },
         'GB': { img: '../test.jpg', link: 'YOUR_UK_AFFILIATE_LINK_HERE', cta: 'Bet £10 Get £30', label: 'UK SPECIAL', alt: 'UK Betting Offer' },
@@ -79,18 +78,35 @@ document.addEventListener("DOMContentLoaded", function() {
         return normalizeCategory(category) + "_" + s.replace(/[^a-z0-9]/g, ''); 
     };
 
-    // Strict expiry check
+    // =========================================================================
+    // ===  LOGIC: Expiry & Categorization  ====================================
+    // =========================================================================
+    
+    // Check if match should be removed from memory completely
     function isMatchExpired(match) {
-        if (match.viewers > 0) return false; 
+        if (match.viewers > 0) return false; // Never expire if watching
+
         const nowSec = Date.now() / 1000;
         const startSec = match.date / 1000;
         const durationMins = CONFIG.sportDurations[match.category] || 180;
-        const cutoffSec = startSec + (durationMins * 60) + (CONFIG.bufferMinutes * 60);
-        return nowSec > cutoffSec;
+        // The point where it is considered "Removed from Finished Section"
+        const removalSec = startSec + (durationMins * 60) + (CONFIG.bufferMinutes * 60);
+        
+        // 24/7 LOGIC EXCEPTION:
+        // If it's a Primary API match and the date is in the past (before today),
+        // we normally keep it as a 24/7 stream UNLESS strict time rules apply?
+        // Actually, 24/7 streams are "old" matches provided by the API.
+        // If source is Primary and date < Today, DO NOT EXPIRE.
+        const startOfTodaySec = new Date().setHours(0,0,0,0) / 1000;
+        if (match.source === 'primary' && startSec < startOfTodaySec) {
+            return false;
+        }
+
+        return nowSec > removalSec;
     }
 
     // =========================================================================
-    // ===  GEO LOGIC (Hydrates the Hardcoded Card)  ===========================
+    // ===  GEO LOGIC  =========================================================
     // =========================================================================
     async function initGeoLogic() {
         try {
@@ -99,14 +115,11 @@ document.addEventListener("DOMContentLoaded", function() {
             catch { try { country = await fetch('https://api.country.is').then(r=>r.json()).then(d=>d.country); } catch(e){} }
 
             const code = country ? country.toUpperCase() : 'DEFAULT';
-            // Use specific country if exists, otherwise Worldwide, otherwise Default
             if (GEO_OFFERS[code]) currentAffiliateOffer = GEO_OFFERS[code];
             else currentAffiliateOffer = GEO_OFFERS['WORLDWIDE'] || GEO_OFFERS['default'];
 
-            // HYDRATE THE EXISTING DOM CARD (LCP FIX)
             updateAffiliateCardDOM(document.getElementById('lcp-affiliate-card'));
             
-            // Also update any others (in finished section etc)
             document.querySelectorAll('.match-card.affiliate-card').forEach(c => {
                 if(c.id !== 'lcp-affiliate-card') c.replaceWith(createAffiliateCard());
             });
@@ -129,13 +142,12 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // =========================================================================
-    // ===  CORE VIEWER LOGIC (Double API / Promise.allSettled)  ===============
+    // ===  VIEWER CHECK  ======================================================
     // =========================================================================
     async function fetchAndUpdateViewers() {
         const now = Date.now();
         const liveMatchesForApiCall = allMatches.filter(match => {
             if (match.source !== 'primary' || !match.sources || match.sources.length === 0) return false;
-            // Check matches starting soon or already started
             return match.date <= (now + 1800000); 
         });
 
@@ -263,10 +275,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // =========================================================================
     async function initApp() {
         initGeoLogic();
-        setupEventListeners(); // Ensure listeners are attached
+        setupEventListeners(); 
         handleURLParams();
 
-        // 1. Load Cache
         try {
             const cached = localStorage.getItem(CONFIG.storageKey);
             if(cached) {
@@ -275,20 +286,16 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         } catch(e){}
 
-        // 2. Fetch Primary
         const primary = await fetchPrimaryAPI();
         if(primary.length > 0) {
             allMatches = primary;
             localStorage.setItem(CONFIG.storageKey, JSON.stringify(allMatches));
             renderMatches();
-            // Important: Populate dropdown AFTER data is loaded
             populateCategoryDropdown();
         }
 
-        // 3. Immediate Viewer Check
         await fetchAndUpdateViewers();
 
-        // 4. Fetch Backup
         setTimeout(async () => {
             const backup = await fetchBackupAPI();
             if(backup.length > 0) {
@@ -300,13 +307,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
                 allMatches = merged;
                 renderMatches(true);
-                populateCategoryDropdown(); // Update dropdown with new sports if any
+                populateCategoryDropdown(); 
             }
         }, 3000);
     }
 
     // =========================================================================
-    // ===  RENDERER (LOGIC FIXED)  ============================================
+    // ===  RENDERER & CATEGORIZATION  =========================================
     // =========================================================================
     function createMatchCard(match, index) {
         const card = document.createElement('a');
@@ -317,7 +324,6 @@ document.addEventListener("DOMContentLoaded", function() {
         img.className = 'match-poster';
         img.width = 444; img.height = 250;
         img.alt = match.title;
-        // First 3 eager, rest lazy
         if(index < 3) {
             img.loading = "eager"; img.fetchPriority = "high"; img.src = match.posterUrl;
         } else {
@@ -325,29 +331,24 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         img.onerror = function() { this.src = "../Fallbackimage.webp"; this.onerror = null; };
 
-        // Badge
-        const now = Date.now();
-        const duration = (CONFIG.sportDurations[match.category] || 180) * 60 * 1000;
-        const end = match.date + duration;
-        
+        // Badge Display Logic
         let badgeHtml = '';
         let badgeClass = '';
 
-        // LOGIC REFINEMENT FOR BADGES
-        // Note: The grouping logic in renderMatches handles where it goes. 
-        // This just handles how it LOOKS.
-        const is247 = (match.isCalc247); 
-
+        // Note: m.isCalc... properties are set in renderMatches below
+        // This is purely for visual display based on those properties
+        
         if (match.viewers > 0) {
             badgeClass = 'status-badge viewer-badge';
             badgeHtml = `<span>${formatViewers(match.viewers)}</span><svg class="viewer-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-        } else if ((now >= match.date && now <= end) && !is247) {
+        } else if (match.isCalcLive && !match.isCalc247) {
             badgeClass = 'status-badge live';
             badgeHtml = `<span>LIVE</span>`;
-        } else if (now > end && !is247) {
+        } else if (match.isCalcFinished) {
             badgeClass = 'status-badge finished';
             badgeHtml = `<span>FINISHED</span>`;
         } else {
+            // Default Date
             badgeClass = 'status-badge date';
             badgeHtml = new Date(match.date).toLocaleTimeString([], {hour:'numeric', minute:'2-digit', hour12:true});
         }
@@ -368,7 +369,7 @@ document.addEventListener("DOMContentLoaded", function() {
         
         const info = document.createElement('div');
         info.className = 'match-info';
-        const meta = is247 ? "24/7 Stream" : (match.viewers > 0 ? "Started" : new Date(match.date).toLocaleDateString());
+        const meta = match.isCalc247 ? "24/7 Stream" : (match.viewers > 0 ? "Started" : new Date(match.date).toLocaleDateString());
         info.innerHTML = `<div class="match-title">${match.title}</div><div class="match-meta-row"><span class="match-category">${match.category}</span><span>${meta}</span></div>`;
         card.appendChild(info);
 
@@ -397,25 +398,40 @@ document.addEventListener("DOMContentLoaded", function() {
         const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
         const todayTime = startOfToday.getTime();
 
-        // 1. FILTERING
+        // 1. GLOBAL FILTERING & CATEGORIZATION
         let filtered = allMatches.filter(m => {
             if(currentFilters.sport !== 'all' && m.category !== currentFilters.sport) return false;
             
             const duration = (CONFIG.sportDurations[m.category] || 180) * 60 * 1000;
             const end = m.date + duration;
+            // The buffer end is when it is completely removed from Finished list
+            const bufferEnd = end + (CONFIG.bufferMinutes * 60 * 1000);
             
+            // --- LIVE LOGIC ---
+            // It is LIVE if: Viewers > 0 OR Time is within [Start, End]
             const isTimeLive = (now >= m.date && now <= end);
             m.isCalcLive = (m.viewers > 0) || isTimeLive;
             
-            // 24/7 LOGIC: Date < Today AND Not Live.
-            // If it's old but has viewers, it's LIVE (handled above).
-            // If it's old and NO viewers, it's 24/7.
-            if(m.date < todayTime && !m.isCalcLive) {
-                m.isCalc247 = true;
-                m.isCalcFinished = false; // It's 24/7, not "Finished"
-            } else {
+            // --- FINISHED LOGIC ---
+            // It is FINISHED if: Not Live AND Time > End AND Time <= BufferEnd
+            // IMPORTANT: If it's a 24/7 match (old date from primary), it is NOT finished.
+            // 24/7 Logic: Primary Source AND Start Date < Today AND Not Live.
+            const isCandidate247 = (m.source === 'primary' && m.date < todayTime);
+
+            if (m.isCalcLive) {
+                m.isCalcFinished = false;
                 m.isCalc247 = false;
-                m.isCalcFinished = (now > end) && !m.isCalcLive;
+            } else if (isCandidate247) {
+                // If it's an old primary match and not live, it's 24/7
+                m.isCalc247 = true;
+                m.isCalcFinished = false;
+            } else {
+                // Standard Match
+                m.isCalc247 = false;
+                // It is finished if time > end AND within buffer
+                // Note: The isMatchExpired function during fetch already removes matches > bufferEnd
+                // So if it exists here and is not live, it is likely finished.
+                m.isCalcFinished = (now > end); 
             }
 
             if(currentFilters.live && !m.isCalcLive) return false;
@@ -423,22 +439,26 @@ document.addEventListener("DOMContentLoaded", function() {
             return true;
         });
 
-        // 2. GROUPING & SORTING
+        // 2. SORTING & GROUPING
         let groupViewers = filtered.filter(m => m.viewers > 0);
         groupViewers.sort((a,b) => b.viewers - a.viewers || a.date - b.date);
 
-        // Matches that should be live by time but have 0 viewers
+        // Live by Time
         let groupLiveTime = filtered.filter(m => m.isCalcLive && m.viewers === 0);
         groupLiveTime.sort((a,b) => a.date - b.date);
 
+        // Upcoming
         let groupUpcoming = filtered.filter(m => !m.isCalcLive && !m.isCalcFinished && !m.isCalc247);
         groupUpcoming.sort((a,b) => a.date - b.date);
 
+        // Finished
         let groupFinished = filtered.filter(m => m.isCalcFinished);
-        groupFinished.sort((a,b) => b.date - a.date);
+        groupFinished.sort((a,b) => b.date - a.date); // Newest finished first
 
+        // 24/7
         let group247 = filtered.filter(m => m.isCalc247);
-        group247.sort((a,b) => b.date - a.date); // Sort 24/7 by newest old date? or random? usually date.
+        // Sort 24/7 to keep list stable, maybe alphabetical or date
+        group247.sort((a,b) => b.date - a.date); 
 
         // 3. DOM CONSTRUCTION
         const frag = document.createDocumentFragment();
@@ -450,19 +470,14 @@ document.addEventListener("DOMContentLoaded", function() {
             const grid = document.createElement('div');
             grid.className = 'results-grid';
             
-            // Re-inject Affiliate Card if it's the top section
-            if(isTop) {
-                // If we are re-rendering, we create a new DOM element for the affiliate card
-                // to ensure it sits in the grid correctly.
-                grid.appendChild(createAffiliateCard());
-            }
+            if(isTop) grid.appendChild(createAffiliateCard());
 
             list.forEach((m, i) => grid.appendChild(createMatchCard(m, isTop ? i : 99)));
             sec.appendChild(grid);
             frag.appendChild(sec);
         };
 
-        // Live Section
+        // Live
         let allLive = [...groupViewers, ...groupLiveTime];
         if(allLive.length > 0) appendSection("LIVE NOW", allLive, true);
 
@@ -496,10 +511,13 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         if(elements.skeletonLoader) elements.skeletonLoader.style.display = 'none';
 
-        // Finished Section (Hidden by default)
+        // Finished Section
         if(elements.finishedContainer) {
             elements.finishedContainer.innerHTML = '';
+            // Only show button if there are actually finished matches
             if(groupFinished.length > 0) {
+                elements.finishedSection.style.display = 'block'; // Ensure parent container is visible
+                
                 const sec = document.createElement('div');
                 sec.className = 'date-section';
                 sec.innerHTML = `<h2 class="section-header">Finished</h2>`;
@@ -510,10 +528,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 sec.appendChild(grid);
                 elements.finishedContainer.appendChild(sec);
             } else {
-                const msg = document.createElement('div');
-                msg.className = 'no-finished-msg';
-                msg.textContent = "No matches finished recently.";
-                elements.finishedContainer.appendChild(msg);
+                // If no finished matches, hide the main section wrapper or show message
+                // Currently hiding to keep clean
+                elements.finishedSection.style.display = 'none'; 
             }
         }
 
@@ -531,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // TITLE UPDATE
         const sportName = currentFilters.sport === 'all' ? 'All Sports' : currentFilters.sport.replace(/-/g, ' ').replace(/\b\w/g, c=>c.toUpperCase());
-        const pageTitle = `buffstreams.world ${sportName} Schedule & Streams`;
+        const pageTitle = `buffstreams.world ${sportName} schedule and livestreams`;
         if(elements.categoryTitle) elements.categoryTitle.textContent = `${sportName} Schedule`;
         document.title = pageTitle;
     }
@@ -541,10 +558,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // =========================================================================
     function setupEventListeners() {
         if(elements.toggleFinishedBtn) {
-            // Remove old listeners to prevent duplicates if init runs twice
             const newBtn = elements.toggleFinishedBtn.cloneNode(true);
             elements.toggleFinishedBtn.parentNode.replaceChild(newBtn, elements.toggleFinishedBtn);
-            elements.toggleFinishedBtn = newBtn; // update reference
+            elements.toggleFinishedBtn = newBtn; 
 
             elements.toggleFinishedBtn.addEventListener('click', () => {
                 const isHidden = elements.finishedContainer.style.display === 'none';
@@ -589,9 +605,6 @@ document.addEventListener("DOMContentLoaded", function() {
             return a.localeCompare(b);
         });
 
-        // Save current selection
-        const currentVal = elements.categorySelect.value || currentFilters.sport;
-        
         elements.categorySelect.innerHTML = list.map(v => 
             `<option value="${v}" ${v === currentFilters.sport ? 'selected' : ''}>
                 ${v==='all'?'All Sports':v.replace(/-/g, ' ').toUpperCase()}
