@@ -48,7 +48,12 @@ main{display:block}
 /* ===  SCHEDULE PAGE STYLES  ============================================== */
 /* ========================================================================= */
 
-.fullpage { width: 90%; max-width: 1400px; margin: 0 auto; }
+.fullpage { 
+    width: 90%; 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    min-height: 80vh; /* FIX: Prevents footer jump layout shift */
+}
 #category-title { font-size: clamp(1.5rem, 3vw, 2rem); text-align: center; color: var(--white); text-transform: capitalize; margin: 1.5rem 0; }
 
 /* Filter Bar */
