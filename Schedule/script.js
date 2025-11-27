@@ -11,10 +11,20 @@ document.addEventListener("DOMContentLoaded", function() {
         bufferMinutes: 30, 
         storageKey: 'buff_v12_final',
         sportDurations: {
-            'football': 130, 'basketball': 160, 'american-football': 200, 
-            'baseball': 200, 'hockey': 160, 'fight': 240, 'motor-sports': 150, 
-            'tennis': 180, 'cricket': 400, 'golf': 400, 'rugby': 120, 
-            'boxing': 60, 'mma': 60, 'other': 120
+            'football': 150,          // 2h 30m (Soccer: 90m + 15m HT + 15m Delay + 30m Extra Time safety)
+            'basketball': 180,        // 3h 00m (NBA games often hit 2h 30m + delays)
+            'american-football': 225, // 3h 45m (NFL avg is 3h 12m, but delays/OT push it)
+            'baseball': 210,          // 3h 30m (Pitch clock makes games shorter, this is very safe)
+            'hockey': 185,            // 3h 05m (NHL Regular season + OT/Shootout safety)
+            'fight': 300,             // 5h 00m (UFC/Boxing Main Cards usually last 4-5 hours)
+            'boxing': 120,            // 2h 00m (If single fight)
+            'mma': 120,               // 2h 00m (If single fight)
+            'motor-sports': 180,      // 3h 00m (F1 Max time limit is 3h including red flags)
+            'tennis': 240,            // 4h 00m (Grand slams can go long)
+            'cricket': 480,           // 8h 00m (ODIs/T20s. Tests handled by date)
+            'golf': 480,              // 8h 00m (Tournaments run all day)
+            'rugby': 140,             // 2h 20m
+            'other': 180              // 3h 00m Default safety
         }
     };
 
@@ -684,3 +694,4 @@ document.addEventListener("DOMContentLoaded", function() {
 
     initApp();
 });
+
