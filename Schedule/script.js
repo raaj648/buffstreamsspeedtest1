@@ -3,13 +3,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // --- 1. AFFILIATE & GEO CONFIGURATION ---
     const GEO_OFFERS = {
-        'US': { img: 'YOUR_USA_IMAGE_URL_HERE.jpg', link: 'YOUR_USA_AFFILIATE_LINK_HERE', cta: 'Claim $500 Bonus', label: 'EXCLUSIVE' },
-        'GB': { img: 'YOUR_UK_IMAGE_URL_HERE.jpg', link: 'YOUR_UK_AFFILIATE_LINK_HERE', cta: 'Bet £10 Get £30', label: 'UK SPECIAL' },
-        'CA': { img: 'YOUR_CANADA_IMAGE_URL_HERE.jpg', link: 'YOUR_CANADA_AFFILIATE_LINK_HERE', cta: 'Get $200 Free Bet', label: 'BONUS' },
-        'GR': { img: 'YOUR_CANADA_IMAGE_URL_HERE.jpg', link: 'YOUR_GREECE_AFFILIATE_LINK_HERE', cta: 'Claim Bonus Now', label: 'OFFER' },
+        'US': { img: '../test.jpg', link: 'YOUR_USA_AFFILIATE_LINK_HERE', cta: 'Claim $500 Bonus', label: 'EXCLUSIVE' },
+        'GB': { img: '../test.jpg', link: 'YOUR_UK_AFFILIATE_LINK_HERE', cta: 'Bet £10 Get £30', label: 'UK SPECIAL' },
+        'CA': { img: '../test.jpg', link: 'YOUR_CANADA_AFFILIATE_LINK_HERE', cta: 'Get $200 Free Bet', label: 'BONUS' },
+        'GR': { img: '../test.jpg', link: 'YOUR_GREECE_AFFILIATE_LINK_HERE', cta: 'Claim Bonus Now', label: 'OFFER' },
         'default': { img: '../test.jpg', link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE', cta: 'Join & Win Big', label: 'SPONSORED' }
     };
-    const FALLBACK_OFFER = { img: 'YOUR_FALLBACK_IMAGE_URL_HERE.jpg', link: 'YOUR_FALLBACK_AFFILIATE_LINK_HERE', cta: 'Play Now', label: 'PROMO' };
+    const FALLBACK_OFFER = { img: '../test.jpg', link: 'YOUR_FALLBACK_AFFILIATE_LINK_HERE', cta: 'Play Now', label: 'PROMO' };
 
     let currentAffiliateOffer = GEO_OFFERS['default'];
     
@@ -701,3 +701,4 @@ document.addEventListener("DOMContentLoaded", function() {
 
     loadMatches();
 });
+
