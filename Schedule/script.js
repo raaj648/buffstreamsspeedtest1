@@ -2,8 +2,6 @@ document.addEventListener("DOMContentLoaded", function() {
     console.log("--- Buffstreams Schedule Script Started ---");
 
     // --- 1. AFFILIATE & GEO CONFIGURATION ---
-    
-    // Triple Logic: Specific Country > Global > Technical Fallback
     const GEO_OFFERS = {
         'US': { img: 'YOUR_USA_IMAGE_URL_HERE.jpg', link: 'YOUR_USA_AFFILIATE_LINK_HERE', cta: 'Claim $500 Bonus', label: 'EXCLUSIVE' },
         'GB': { img: 'YOUR_UK_IMAGE_URL_HERE.jpg', link: 'YOUR_UK_AFFILIATE_LINK_HERE', cta: 'Bet £10 Get £30', label: 'UK SPECIAL' },
@@ -11,55 +9,46 @@ document.addEventListener("DOMContentLoaded", function() {
         'GR': { img: 'YOUR_CANADA_IMAGE_URL_HERE.jpg', link: 'YOUR_GREECE_AFFILIATE_LINK_HERE', cta: 'Claim Bonus Now', label: 'OFFER' },
         'default': { img: '../test.jpg', link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE', cta: 'Join & Win Big', label: 'SPONSORED' }
     };
-
     const FALLBACK_OFFER = { img: 'YOUR_FALLBACK_IMAGE_URL_HERE.jpg', link: 'YOUR_FALLBACK_AFFILIATE_LINK_HERE', cta: 'Play Now', label: 'PROMO' };
 
-    let currentAffiliateOffer = GEO_OFFERS['default']; // Default start
-    let isGeoResolved = false;
-
-    // --- 2. ROBUST GEO-DETECTION (Double API) ---
+    let currentAffiliateOffer = GEO_OFFERS['default'];
+    
+    // --- 2. GEO-DETECTION ---
     async function initGeoLogic() {
         let detectedCountry = null;
         try {
-            // Method 1: GeoJS
             const res = await fetch('https://get.geojs.io/v1/ip/country.json?_=' + new Date().getTime());
             if (!res.ok) throw new Error('GeoJS failed');
             const data = await res.json();
             if (data.country) detectedCountry = data.country.toUpperCase();
         } catch (e1) {
             try {
-                // Method 2: Country.is
                 const res2 = await fetch('https://api.country.is');
                 if (!res2.ok) throw new Error('Country.is failed');
                 const data2 = await res2.json();
                 if (data2.country) detectedCountry = data2.country.toUpperCase();
             } catch (e2) {
-                console.warn("Geo Detection Failed. Using Fallback.");
                 currentAffiliateOffer = FALLBACK_OFFER;
-                isGeoResolved = true;
                 return;
             }
         }
 
-        if (detectedCountry) {
-            if (GEO_OFFERS.hasOwnProperty(detectedCountry)) {
-                currentAffiliateOffer = GEO_OFFERS[detectedCountry];
-            } else {
-                currentAffiliateOffer = GEO_OFFERS['default'];
-            }
+        if (detectedCountry && GEO_OFFERS.hasOwnProperty(detectedCountry)) {
+            currentAffiliateOffer = GEO_OFFERS[detectedCountry];
         } else {
-            currentAffiliateOffer = FALLBACK_OFFER;
+            currentAffiliateOffer = GEO_OFFERS['default'];
         }
-        isGeoResolved = true;
         
-        // Refresh grid if matches loaded before Geo finished
-        if(allMatches.length > 0) renderMatches();
+        // Only re-render if we already have matches and the first render happened
+        if(allMatches.length > 0) {
+            // We just update the affiliate cards in place to avoid full reflow
+            document.querySelectorAll('.match-card.affiliate-card').forEach(card => {
+                const newCard = createAffiliateCard();
+                card.replaceWith(newCard);
+            });
+        }
     }
-    
-    // Start Geo Detection immediately
     initGeoLogic();
-
-   
 
     // --- 4. CORE SCHEDULE LOGIC ---
     const CONFIG = {
@@ -129,7 +118,6 @@ document.addEventListener("DOMContentLoaded", function() {
         return btoa(unescape(encodeURIComponent(`${unix}_${safeSport}_${safeMatch}`)));
     };
 
-    // --- API Fetching ---
     function buildPrimaryPosterUrl(match) {
         if (match.teams?.home?.badge && match.teams?.away?.badge) {
             return `${CONFIG.apiPrimary}/images/poster/${match.teams.home.badge}/${match.teams.away.badge}.webp`;
@@ -143,10 +131,11 @@ document.addEventListener("DOMContentLoaded", function() {
         return "../Fallbackimage.webp";
     }
 
+    // --- API Fetching ---
     async function fetchPrimaryAPI() {
         try {
             const allRes = await fetch(`${CONFIG.apiPrimary}/matches/all`);
-            if(!allRes.ok) throw new Error(`Primary Match API Error: ${allRes.status}`);
+            if(!allRes.ok) throw new Error(`Primary API Error`);
             const allData = await allRes.json();
             const nowSec = Date.now() / 1000;
 
@@ -157,21 +146,20 @@ document.addEventListener("DOMContentLoaded", function() {
                     sources: m.sources || [], posterUrl: buildPrimaryPosterUrl(m), source: 'primary'
                 };
             }).filter(m => {
-                if (m.viewers > 0) return true;
                 const durationMins = CONFIG.sportDurations[m.category] || 180;
                 const diffMinutes = (nowSec - (m.date / 1000)) / 60;
                 if (diffMinutes > 1440) return true;
-                if (diffMinutes > (durationMins + 30)) return false;
+                if (diffMinutes > (durationMins + 30) && m.viewers === 0) return false;
                 return true;
             });
-        } catch (e) { throw e; }
+        } catch (e) { return []; }
     }
 
     async function fetchBackupAPI() {
         try {
             const url = CONFIG.proxyUrl + encodeURIComponent(CONFIG.apiBackup);
             const res = await fetch(url);
-            if(!res.ok) throw new Error(`Backup API Error: ${res.status}`);
+            if(!res.ok) throw new Error(`Backup API Error`);
             const data = await res.json();
             const backupMatches = [];
             const nowSec = Date.now() / 1000;
@@ -198,9 +186,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
             return backupMatches;
-        } catch (e) { console.error("Backup API Failed:", e); return []; }
+        } catch (e) { return []; }
     }
 
+    // SPEED FIX: Delayed & Throttled Viewer Check
+    // We delay this function to run ONLY after the main paint is done.
     async function fetchAndUpdateViewers() {
         const now = Date.now();
         const liveMatchesForApiCall = allMatches.filter(match => {
@@ -210,44 +200,55 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (liveMatchesForApiCall.length === 0) return;
 
-        const streamFetchPromises = liveMatchesForApiCall.flatMap(match =>
-            match.sources.map(source =>
-                fetch(`${CONFIG.apiPrimary}/stream/${source.source}/${source.id}`)
-                .then(res => res.ok ? res.json() : [])
-                .then(streams => ({ matchId: match.id, streams }))
-                .catch(() => ({ matchId: match.id, streams: [] }))
-            )
-        );
-
-        const results = await Promise.allSettled(streamFetchPromises);
-        const viewerCounts = {};
-
-        results.forEach(result => {
-            if (result.status === 'fulfilled' && result.value) {
-                const { matchId, streams } = result.value;
-                if (!viewerCounts[matchId]) viewerCounts[matchId] = 0;
-                if (Array.isArray(streams)) {
-                    streams.forEach(stream => {
-                        if (stream.viewers && typeof stream.viewers === 'number') viewerCounts[matchId] += stream.viewers;
-                    });
+        // Process only 5 matches at a time to save network
+        const processBatch = async (batch) => {
+             const streamFetchPromises = batch.flatMap(match =>
+                match.sources.map(source =>
+                    fetch(`${CONFIG.apiPrimary}/stream/${source.source}/${source.id}`)
+                    .then(res => res.ok ? res.json() : [])
+                    .then(streams => ({ matchId: match.id, streams }))
+                    .catch(() => ({ matchId: match.id, streams: [] }))
+                )
+            );
+            
+            const results = await Promise.allSettled(streamFetchPromises);
+            let needsRerender = false;
+            
+            results.forEach(result => {
+                if (result.status === 'fulfilled' && result.value) {
+                    const { matchId, streams } = result.value;
+                    let totalViewers = 0;
+                    if (Array.isArray(streams)) {
+                        streams.forEach(stream => {
+                            if (stream.viewers) totalViewers += stream.viewers;
+                        });
+                    }
+                    if (totalViewers > 0) {
+                        const matchInArray = allMatches.find(m => m.id == matchId);
+                        if (matchInArray && matchInArray.viewers !== totalViewers) {
+                            matchInArray.viewers = totalViewers;
+                            matchInArray.isLive = true; 
+                            needsRerender = true;
+                        }
+                    }
                 }
-            }
-        });
+            });
 
-        let needsRerender = false;
-        Object.keys(viewerCounts).forEach(matchId => {
-            const totalViewers = viewerCounts[matchId];
-            if (totalViewers > 0) {
-                const matchInArray = allMatches.find(m => m.id == matchId);
-                if (matchInArray && matchInArray.viewers !== totalViewers) {
-                    matchInArray.viewers = totalViewers;
-                    matchInArray.isLive = true; 
-                    needsRerender = true;
-                }
+            if (needsRerender) {
+                // We only re-render if we found viewers to update UI
+                // We use requestAnimationFrame to not block
+                requestAnimationFrame(() => renderMatches(true));
             }
-        });
+        };
 
-        if (needsRerender) renderMatches();
+        // Split into chunks of 3 matches
+        const chunkSize = 3;
+        for (let i = 0; i < liveMatchesForApiCall.length; i += chunkSize) {
+            const chunk = liveMatchesForApiCall.slice(i, i + chunkSize);
+            await processBatch(chunk);
+            // Wait 200ms between chunks to breathe
+            await new Promise(r => setTimeout(r, 200));
+        }
     }
 
     async function loadMatches() {
@@ -255,50 +256,68 @@ document.addEventListener("DOMContentLoaded", function() {
         if(elements.finishedContainer) elements.finishedContainer.innerHTML = '';
         if(elements.skeletonLoader) elements.skeletonLoader.style.display = 'block';
 
-        const backupPromise = fetchBackupAPI();
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), CONFIG.primaryTimeout));
-
-        let primaryMatches = [];
-        try { primaryMatches = await Promise.race([fetchPrimaryAPI(), timeoutPromise]); } 
-        catch (error) { primaryMatches = []; }
-
-        const backupMatches = await backupPromise;
-        const merged = [...primaryMatches];
-        backupMatches.forEach(bm => {
-            const fp = getMatchFingerprint(bm.category, bm.title);
-            const isDuplicate = primaryMatches.some(pm => {
-                const titleMatch = getMatchFingerprint(pm.category, pm.title) === fp;
-                const timeDiff = Math.abs(pm.date - bm.date);
-                return titleMatch && timeDiff < 7200000; 
+        // Fetch Primary First (Fastest)
+        try {
+            const primaryData = await fetchPrimaryAPI();
+            allMatches = primaryData;
+            
+            // Initial render with just primary data to show content ASAP
+            renderMatches(); 
+            
+            // Then fetch backup in background
+            fetchBackupAPI().then(backupMatches => {
+                const merged = [...allMatches];
+                backupMatches.forEach(bm => {
+                    const fp = getMatchFingerprint(bm.category, bm.title);
+                    const isDuplicate = allMatches.some(pm => {
+                        const titleMatch = getMatchFingerprint(pm.category, pm.title) === fp;
+                        const timeDiff = Math.abs(pm.date - bm.date);
+                        return titleMatch && timeDiff < 7200000; 
+                    });
+                    if (!isDuplicate) merged.push(bm);
+                });
+                allMatches = merged;
+                populateCategoryDropdown();
+                renderMatches();
+                
+                // SPEED FIX: Delay viewer check by 6 seconds to clear TBT
+                setTimeout(fetchAndUpdateViewers, 6000);
             });
-            if (!isDuplicate) merged.push(bm);
-        });
+            
+        } catch (error) {
+            console.error(error);
+        }
 
-        allMatches = merged;
         populateCategoryDropdown();
         handleURLParams();
-        fetchAndUpdateViewers();
     }
 
     // --- CARD CREATION ---
-    
-    // 1. Regular Match Card
-    function createMatchCard(match) {
+    // Added 'index' parameter for LCP optimization
+    function createMatchCard(match, index) {
         const card = document.createElement('a');
         card.href = `../Matchinformation/?id=${match.id}`;
         card.className = 'match-card';
         
         const img = document.createElement('img');
         img.className = 'match-poster';
-        // SPEED FIX: Explicit width/height to reserve layout space (CLS) and async decoding (LCP)
+        // SPEED FIX: Explicit width/height
         img.width = 444; 
         img.height = 250;
-        img.loading = "lazy";
-        img.decoding = "async"; 
         
-        // Placeholder
-        img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; 
-        img.dataset.src = match.posterUrl;
+        // SPEED FIX: LCP Optimization
+        // First 3 images are eager, rest are lazy
+        if (index < 3) {
+            img.loading = "eager";
+            img.fetchPriority = "high";
+            img.src = match.posterUrl; // Load immediately
+        } else {
+            img.loading = "lazy";
+            img.decoding = "async";
+            img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+            img.dataset.src = match.posterUrl;
+        }
+
         img.alt = match.title;
         img.onerror = function() { this.src = "../Fallbackimage.webp"; };
         
@@ -350,7 +369,6 @@ document.addEventListener("DOMContentLoaded", function() {
         return card;
     }
 
-    // 2. Affiliate Match Card (Native Ad)
     function createAffiliateCard() {
         const card = document.createElement('a');
         card.href = currentAffiliateOffer.link;
@@ -363,12 +381,12 @@ document.addEventListener("DOMContentLoaded", function() {
         img.className = 'match-poster';
         img.src = currentAffiliateOffer.img;
         img.alt = "Exclusive Bonus";
-        // SPEED FIX: Explicit dimensions and async
         img.width = 444; 
         img.height = 250;
         img.decoding = "async";
-        // Keep loading eager for the first card
+        // Affiliate card is always first, so eager load
         img.loading = "eager"; 
+        img.fetchPriority = "high";
 
         const badgeDiv = document.createElement('div');
         badgeDiv.className = 'status-badge';
@@ -393,18 +411,16 @@ document.addEventListener("DOMContentLoaded", function() {
         return card;
     }
 
-    function renderMatches() {
+    // SPEED FIX: Chunked Rendering to avoid Main Thread Blocking
+    function renderMatches(isUpdate = false) {
         if(!elements.matchesContainer) return;
-        elements.matchesContainer.innerHTML = '';
-        if(elements.finishedContainer) elements.finishedContainer.innerHTML = '';
-        if(elements.skeletonLoader) elements.skeletonLoader.style.display = 'none';
-
+        
+        // Prepare data
         const now = Date.now();
         const todayDateObj = new Date();
         todayDateObj.setHours(0,0,0,0);
         const startOfToday = todayDateObj.getTime();
 
-        // Filter
         let filtered = allMatches.filter(m => {
             if (currentFilters.sport !== 'all' && m.category !== currentFilters.sport) return false;
             const durationMins = CONFIG.sportDurations[m.category] || 180;
@@ -417,8 +433,20 @@ document.addEventListener("DOMContentLoaded", function() {
             return true;
         });
 
+        // Separation Logic
         let finishedMatches = filtered.filter(m => m.isRefFinished);
         let activeMatches = filtered.filter(m => !m.isRefFinished);
+
+        finishedMatches.sort((a, b) => b.date - a.date || a.title.localeCompare(b.title));
+        let liveRanked = activeMatches.filter(m => m.viewers > 0).sort((a, b) => b.viewers - a.viewers || b.date - a.date);
+        let others = activeMatches.filter(m => !m.viewers || m.viewers === 0);
+        let stream247 = others.filter(m => m.date < startOfToday).sort((a, b) => b.date - a.date);
+        let standardSchedule = others.filter(m => m.date >= startOfToday).sort((a, b) => a.date - b.date);
+
+        // Clear existing only if not a partial update (or just clear to be safe/simple)
+        elements.matchesContainer.innerHTML = '';
+        if(elements.finishedContainer) elements.finishedContainer.innerHTML = '';
+        if(elements.skeletonLoader) elements.skeletonLoader.style.display = 'none';
 
         if (activeMatches.length === 0) {
             elements.msgContainer.style.display = 'block';
@@ -427,117 +455,110 @@ document.addEventListener("DOMContentLoaded", function() {
             elements.msgContainer.style.display = 'none';
         }
 
-        finishedMatches.sort((a, b) => b.date - a.date || a.title.localeCompare(b.title));
-        let liveRanked = activeMatches.filter(m => m.viewers > 0).sort((a, b) => b.viewers - a.viewers || b.date - a.date);
-        let others = activeMatches.filter(m => !m.viewers || m.viewers === 0);
-        let stream247 = others.filter(m => m.date < startOfToday).sort((a, b) => b.date - a.date);
-        let standardSchedule = others.filter(m => m.date >= startOfToday).sort((a, b) => a.date - b.date);
+        // --- RENDER QUEUE ---
+        // We push tasks to a queue and execute them in chunks
+        const renderQueue = [];
 
-        const fragment = document.createDocumentFragment();
+        // Helper to push section creation to queue
+        const queueSection = (title, matches, isFirst = false) => {
+            renderQueue.push(() => {
+                const section = document.createElement('div');
+                section.className = 'date-section';
+                section.innerHTML = `<h2 class="section-header">${title}</h2>`;
+                const grid = document.createElement('div');
+                grid.className = 'results-grid';
+                
+                // Add Affiliate card to every section
+                grid.appendChild(createAffiliateCard());
 
-        // --- 1. LIVE SECTION ---
-        if (liveRanked.length > 0) {
-            const section = document.createElement('div');
-            section.className = 'date-section';
-            section.innerHTML = `<h2 class="section-header">LIVE NOW</h2>`;
-            const grid = document.createElement('div');
-            grid.className = 'results-grid';
-            
-            // Inject Affiliate Card FIRST
-            grid.appendChild(createAffiliateCard());
+                matches.forEach((m, idx) => {
+                    // Global index logic for LCP: Only the very first section's top items get priority
+                    const globalIdx = isFirst ? idx : 99; 
+                    grid.appendChild(createMatchCard(m, globalIdx));
+                });
+                
+                section.appendChild(grid);
+                elements.matchesContainer.appendChild(section);
+            });
+        };
 
-            liveRanked.forEach(m => grid.appendChild(createMatchCard(m)));
-            section.appendChild(grid);
-            fragment.appendChild(section);
-        }
+        // 1. Live
+        if (liveRanked.length > 0) queueSection("LIVE NOW", liveRanked, true);
 
-        // --- 2. UPCOMING DATES SECTION ---
+        // 2. Upcoming
         if (standardSchedule.length > 0) {
-            const uniqueKeys = [];
+            const grouped = {};
             const todayStr = todayDateObj.toDateString();
             standardSchedule.forEach(m => {
                 const d = new Date(m.date);
                 let key = (d.toDateString() === todayStr) ? "TODAY" : d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
-                if(!uniqueKeys.includes(key)) uniqueKeys.push(key);
+                if(!grouped[key]) grouped[key] = [];
+                grouped[key].push(m);
             });
+            Object.keys(grouped).forEach((key, i) => {
+                // If there were no live matches, the first upcoming section is "First"
+                queueSection(key, grouped[key], liveRanked.length === 0 && i === 0);
+            });
+        }
 
-            uniqueKeys.forEach(key => {
-                const section = document.createElement('div');
-                section.className = 'date-section';
-                section.innerHTML = `<h2 class="section-header">${key}</h2>`;
+        // 3. 24/7
+        if (stream247.length > 0) queueSection("24/7 Live Streams", stream247, false);
+
+        // 4. Finished (Separate container)
+        if (finishedMatches.length > 0) {
+             renderQueue.push(() => {
+                elements.finishedSection.style.display = 'block';
+                const div = document.createElement('div');
+                div.className = 'date-section';
+                div.innerHTML = `<h2 class="section-header">Finished</h2>`;
                 const grid = document.createElement('div');
                 grid.className = 'results-grid';
-                
-                // Inject Affiliate Card FIRST in every date section
                 grid.appendChild(createAffiliateCard());
-
-                const ms = standardSchedule.filter(m => {
-                    const d = new Date(m.date);
-                    let k = (d.toDateString() === todayStr) ? "TODAY" : d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
-                    return k === key;
-                });
-                ms.forEach(m => grid.appendChild(createMatchCard(m)));
-                section.appendChild(grid);
-                fragment.appendChild(section);
-            });
-        }
-
-        // --- 3. 24/7 STREAMS ---
-        if (stream247.length > 0) {
-            const section = document.createElement('div');
-            section.className = 'date-section';
-            section.innerHTML = `<h2 class="section-header">24/7 Live Streams</h2>`;
-            const grid = document.createElement('div');
-            grid.className = 'results-grid';
-            
-            // Inject Affiliate Card FIRST
-            grid.appendChild(createAffiliateCard());
-
-            stream247.forEach(m => grid.appendChild(createMatchCard(m)));
-            section.appendChild(grid);
-            fragment.appendChild(section);
-        }
-
-        elements.matchesContainer.appendChild(fragment);
-
-        // --- 4. FINISHED SECTION ---
-        elements.finishedSection.style.display = 'block';
-        const finishedSectionDiv = document.createElement('div');
-        finishedSectionDiv.className = 'date-section';
-        finishedSectionDiv.innerHTML = `<h2 class="section-header">Finished</h2>`;
-
-        if (finishedMatches.length > 0) {
-            const grid = document.createElement('div');
-            grid.className = 'results-grid';
-            
-            // Inject Affiliate Card FIRST in Finished too
-            grid.appendChild(createAffiliateCard());
-
-            finishedMatches.forEach(m => grid.appendChild(createMatchCard(m)));
-            finishedSectionDiv.appendChild(grid);
+                finishedMatches.forEach(m => grid.appendChild(createMatchCard(m, 99)));
+                div.appendChild(grid);
+                elements.finishedContainer.appendChild(div);
+             });
         } else {
-            const msg = document.createElement('div');
-            msg.className = 'no-finished-msg';
-            msg.textContent = "No recently finished match available.";
-            finishedSectionDiv.appendChild(msg);
-        }
-        elements.finishedContainer.appendChild(finishedSectionDiv);
-
-        // Lazy Load
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if(e.isIntersecting) {
-                    const img = e.target;
-                    if(img.dataset.src) {
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                        observer.unobserve(img);
-                    }
-                }
+            renderQueue.push(() => {
+                const msg = document.createElement('div');
+                msg.className = 'no-finished-msg';
+                msg.textContent = "No recently finished match available.";
+                elements.finishedContainer.appendChild(msg);
             });
-        });
-        document.querySelectorAll('img.match-poster').forEach(img => observer.observe(img));
-        
+        }
+
+        // --- EXECUTE QUEUE IN CHUNKS ---
+        const executeChunk = () => {
+            if (renderQueue.length === 0) {
+                // Done rendering, setup IntersectionObserver for lazy loading
+                const observer = new IntersectionObserver(entries => {
+                    entries.forEach(e => {
+                        if(e.isIntersecting) {
+                            const img = e.target;
+                            if(img.dataset.src) {
+                                img.src = img.dataset.src;
+                                img.removeAttribute('data-src');
+                                observer.unobserve(img);
+                            }
+                        }
+                    });
+                });
+                document.querySelectorAll('img.match-poster[data-src]').forEach(img => observer.observe(img));
+                return;
+            }
+
+            // Render 1 task (one section) per frame
+            const task = renderQueue.shift();
+            task();
+            
+            // Schedule next task
+            // We use setTimeout to break the call stack and let main thread breathe
+            setTimeout(executeChunk, 0); 
+        };
+
+        // Start Rendering
+        executeChunk();
+
         const sportName = currentFilters.sport === 'all' ? 'All Sports' : currentFilters.sport.toUpperCase();
         if(elements.categoryTitle) elements.categoryTitle.textContent = `${sportName} SCHEDULE`;
     }
@@ -571,7 +592,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // SPEED FIX: Throttled Scroll Listener (Prevents TBT)
+    // SPEED FIX: Throttled Scroll
     let isScrolling = false;
     window.addEventListener("scroll", () => {
         if (!isScrolling) {
@@ -650,7 +671,8 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     window.addEventListener('popstate', handleURLParams);
-	// --- MOBILE MENU LOGIC ---
+
+    // --- MOBILE MENU LOGIC ---
     const mobileMenuElements = {
         toggle: document.getElementById('mobile-toggle'),
         sidebar: document.getElementById('mobile-sidebar'),
@@ -676,7 +698,6 @@ document.addEventListener("DOMContentLoaded", function() {
     if(mobileMenuElements.overlay) {
         mobileMenuElements.overlay.addEventListener('click', toggleMobileMenu);
     }
-	
-	
+
     loadMatches();
 });
