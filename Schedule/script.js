@@ -290,7 +290,13 @@ document.addEventListener("DOMContentLoaded", function() {
         
         const img = document.createElement('img');
         img.className = 'match-poster';
+        // SPEED FIX: Explicit width/height to reserve layout space (CLS) and async decoding (LCP)
+        img.width = 444; 
+        img.height = 250;
         img.loading = "lazy";
+        img.decoding = "async"; 
+        
+        // Placeholder
         img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; 
         img.dataset.src = match.posterUrl;
         img.alt = match.title;
@@ -312,7 +318,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const badgeDiv = document.createElement('div');
         if (match.viewers > 0) {
             badgeDiv.className = 'status-badge viewer-badge';
-            badgeDiv.innerHTML = `<span>${formatViewers(match.viewers)}</span><svg class="viewer-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path></svg>`;
+            badgeDiv.innerHTML = `<span>${formatViewers(match.viewers)}</span><svg class="viewer-icon" width="14" height="14" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path></svg>`;
         } else if (isActuallyLive || is247) {
             badgeDiv.className = 'status-badge live'; badgeDiv.innerHTML = `<span>LIVE</span>`;
         } else if (isFinished) {
@@ -325,7 +331,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (match.popular && match.source === 'primary') {
             const popBadge = document.createElement('div');
             popBadge.className = 'popular-badge';
-            popBadge.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.83 2.33C12.5 1.5 11.5 1.5 11.17 2.33L9.45 7.1C9.33 7.44 9.04 7.7 8.69 7.78L3.65 8.63C2.8 8.75 2.47 9.71 3.06 10.27L6.92 13.9C7.17 14.14 7.28 14.49 7.2 14.85L6.15 19.81C5.97 20.66 6.77 21.3 7.55 20.89L11.79 18.53C12.11 18.35 12.49 18.35 12.81 18.53L17.05 20.89C17.83 21.3 18.63 20.66 18.45 19.81L17.4 14.85C17.32 14.49 17.43 14.14 17.68 13.9L21.54 10.27C22.13 9.71 21.8 8.75 20.95 8.63L15.91 7.78C15.56 7.7 15.27 7.44 15.15 7.1L13.43 2.33Z"/></svg>`;
+            popBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.83 2.33C12.5 1.5 11.5 1.5 11.17 2.33L9.45 7.1C9.33 7.44 9.04 7.7 8.69 7.78L3.65 8.63C2.8 8.75 2.47 9.71 3.06 10.27L6.92 13.9C7.17 14.14 7.28 14.49 7.2 14.85L6.15 19.81C5.97 20.66 6.77 21.3 7.55 20.89L11.79 18.53C12.11 18.35 12.49 18.35 12.81 18.53L17.05 20.89C17.83 21.3 18.63 20.66 18.45 19.81L17.4 14.85C17.32 14.49 17.43 14.14 17.68 13.9L21.54 10.27C22.13 9.71 21.8 8.75 20.95 8.63L15.91 7.78C15.56 7.7 15.27 7.44 15.15 7.1L13.43 2.33Z"/></svg>`;
             card.appendChild(popBadge);
         }
         
@@ -346,22 +352,24 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 2. Affiliate Match Card (Native Ad)
     function createAffiliateCard() {
-        // Create the container
         const card = document.createElement('a');
         card.href = currentAffiliateOffer.link;
         card.target = "_blank";
         card.rel = "nofollow noopener";
-        card.className = 'match-card affiliate-card'; // Add specific class for gold border
+        card.className = 'match-card affiliate-card'; 
         card.ariaLabel = "Sponsored Offer";
 
-        // Image
         const img = document.createElement('img');
         img.className = 'match-poster';
         img.src = currentAffiliateOffer.img;
         img.alt = "Exclusive Bonus";
-        img.loading = "eager"; // Load this fast as it's the first item
+        // SPEED FIX: Explicit dimensions and async
+        img.width = 444; 
+        img.height = 250;
+        img.decoding = "async";
+        // Keep loading eager for the first card
+        img.loading = "eager"; 
 
-        // Badge (Sponsored/Bonus)
         const badgeDiv = document.createElement('div');
         badgeDiv.className = 'status-badge';
         badgeDiv.style.background = 'linear-gradient(90deg, #d4af37, #f2d06b)';
@@ -371,7 +379,6 @@ document.addEventListener("DOMContentLoaded", function() {
         
         card.appendChild(img);
 
-        // Info
         const infoDiv = document.createElement('div');
         infoDiv.className = 'match-info';
         infoDiv.innerHTML = `
@@ -512,12 +519,6 @@ document.addEventListener("DOMContentLoaded", function() {
             const msg = document.createElement('div');
             msg.className = 'no-finished-msg';
             msg.textContent = "No recently finished match available.";
-            
-            // Even if no finished matches, show the ad if you want money? 
-            // Uncomment next lines if you want the ad to appear even with no finished matches
-            // const grid = document.createElement('div'); grid.className = 'results-grid';
-            // grid.appendChild(createAffiliateCard()); finishedSectionDiv.appendChild(grid);
-
             finishedSectionDiv.appendChild(msg);
         }
         elements.finishedContainer.appendChild(finishedSectionDiv);
@@ -570,8 +571,16 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    // SPEED FIX: Throttled Scroll Listener (Prevents TBT)
+    let isScrolling = false;
     window.addEventListener("scroll", () => {
-        if(elements.header) elements.header.classList.toggle("sticky", window.scrollY > 100);
+        if (!isScrolling) {
+            window.requestAnimationFrame(() => {
+                if(elements.header) elements.header.classList.toggle("sticky", window.scrollY > 100);
+                isScrolling = false;
+            });
+            isScrolling = true;
+        }
     }, { passive: true });
 
     function handleURLParams() {
@@ -641,5 +650,33 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     window.addEventListener('popstate', handleURLParams);
+	// --- MOBILE MENU LOGIC ---
+    const mobileMenuElements = {
+        toggle: document.getElementById('mobile-toggle'),
+        sidebar: document.getElementById('mobile-sidebar'),
+        overlay: document.getElementById('mobile-overlay'),
+        closeBtn: document.getElementById('close-sidebar')
+    };
+
+    function toggleMobileMenu() {
+        if(mobileMenuElements.sidebar && mobileMenuElements.overlay) {
+            mobileMenuElements.sidebar.classList.toggle('active');
+            mobileMenuElements.overlay.classList.toggle('active');
+        }
+    }
+
+    if(mobileMenuElements.toggle) {
+        mobileMenuElements.toggle.addEventListener('click', toggleMobileMenu);
+    }
+    
+    if(mobileMenuElements.closeBtn) {
+        mobileMenuElements.closeBtn.addEventListener('click', toggleMobileMenu);
+    }
+    
+    if(mobileMenuElements.overlay) {
+        mobileMenuElements.overlay.addEventListener('click', toggleMobileMenu);
+    }
+	
+	
     loadMatches();
 });
