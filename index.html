@@ -116,6 +116,99 @@
         aspect-ratio: 300/250;
       }
     }
+
+
+	  /* =========================
+   RECENT ARTICLES SECTION
+========================= */
+
+.recent-articles {
+  margin-top: 50px;
+  padding: 25px 20px;
+  background: linear-gradient(135deg, #0f172a, #020617);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  max-width: 100%;
+}
+
+/* Section Title */
+.recent-articles .section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #3b82f6;
+  letter-spacing: 0.5px;
+}
+
+/* Article Container */
+.recent-articles .article-link {
+  margin-bottom: 12px;
+}
+
+/* Article Link Design */
+.recent-articles .article-link a {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: #020617;
+  border-radius: 10px;
+  color: #e5e7eb;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Hover Effect */
+.recent-articles .article-link a:hover {
+  background: #2563eb;
+  color: #ffffff;
+  transform: translateX(6px);
+  box-shadow: 0 5px 20px rgba(37,99,235,0.5);
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+
+/* Tablets */
+@media (max-width: 768px) {
+  .recent-articles {
+    padding: 20px 16px;
+  }
+
+  .recent-articles .section-title {
+    font-size: 20px;
+  }
+
+  .recent-articles .article-link a {
+    font-size: 15px;
+    padding: 12px 14px;
+  }
+}
+
+/* Mobile Devices */
+@media (max-width: 480px) {
+  .recent-articles {
+    padding: 18px 14px;
+    border-radius: 12px;
+  }
+
+  .recent-articles .section-title {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .recent-articles .article-link a {
+    font-size: 14px;
+    padding: 11px 12px;
+  }
+}
+
+	  
   </style>
 <link rel="preload" as="image" href="test.jpg" fetchpriority="high">
   <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -258,6 +351,27 @@
     <p>No. We believe in privacy. No account required.</p>
     <h3>Is there a Buffstreams App?</h3>
     <p>We offer a specialized Android APK for users who prefer an app experience.</p>
+
+	  <div class="recent-articles">
+		  <div class="section-title">Recent Articles</div>
+		  <div class="article-link">
+			  <a href="#">Article 1</a>
+		  </div>
+		  <div class="article-link">
+			  <a href="#">Article 2</a>
+		  </div>
+		  <div class="article-link">
+			  <a href="#">Article 3</a>
+		  </div>
+		  <div class="article-link">
+			  <a href="#">Article 4</a>
+		  </div>
+		  <div class="article-link">
+			  <a href="#">Article 5</a>
+		  </div>
+	  </div>
+
+	  
   </article>
 </main>
 
@@ -461,6 +575,7 @@
 </script>
 </body>
 </html>
+
 
 
 
