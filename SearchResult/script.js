@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("--- Buffstreams Search Script Started ---");
+    console.log("--- Buffstreams Search Script V15 (Geo Affiliate) ---");
 
     // --- CONFIGURATION ---
     const CONFIG = {
@@ -15,6 +15,17 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
+    // --- GEO TARGETING CONFIGURATION ---
+    const GEO_OFFERS = {
+        'US': { img: '../test.jpg', link: 'YOUR_USA_AFFILIATE_LINK_HERE', cta: 'Claim $500 Bonus', label: 'EXCLUSIVE', alt: 'USA Exclusive Bonus' },
+        'GB': { img: '../test.jpg', link: 'YOUR_UK_AFFILIATE_LINK_HERE', cta: 'Bet £10 Get £30', label: 'UK SPECIAL', alt: 'UK Betting Offer' },
+        'CA': { img: '../test.jpg', link: 'YOUR_CANADA_AFFILIATE_LINK_HERE', cta: 'Get $200 Free Bet', label: 'BONUS', alt: 'Canada Sports Bonus' },
+        'GR': { img: '../test.jpg', link: 'YOUR_GREECE_AFFILIATE_LINK_HERE', cta: 'Claim Bonus Now', label: 'OFFER', alt: 'Greece Welcome Bonus' },
+        'WORLDWIDE': { img: '../test.jpg', link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE', cta: 'Join & Win Big', label: 'SPONSORED', alt: 'Global Sports Betting Offer' },
+        'default': { img: '../test.jpg', link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE', cta: 'Join & Win Big', label: 'SPONSORED', alt: 'Global Sports Betting Offer' }
+    };
+    let currentAffiliateOffer = GEO_OFFERS['default'];
+
     // --- STATE ---
     let allMatchesCache = []; 
 
@@ -28,12 +39,40 @@ document.addEventListener("DOMContentLoaded", function() {
         closeOverlayBtn: document.getElementById("search-close"),
         resultsContainer: document.getElementById("search-results-container"),
         resultsTitle: document.getElementById("results-title"),
-        
         mobileToggle: document.getElementById("mobile-toggle"),
         mobileSidebar: document.getElementById("mobile-sidebar"),
         mobileOverlay: document.getElementById("mobile-overlay"),
         closeSidebar: document.getElementById("close-sidebar")
     };
+
+    // --- GEO LOGIC ---
+    async function initGeoLogic() {
+        try {
+            let country = null;
+            try { country = await fetch('https://get.geojs.io/v1/ip/country.json').then(r=>r.json()).then(d=>d.country); }
+            catch { try { country = await fetch('https://api.country.is').then(r=>r.json()).then(d=>d.country); } catch(e){} }
+
+            const code = country ? country.toUpperCase() : 'DEFAULT';
+            if (GEO_OFFERS[code]) currentAffiliateOffer = GEO_OFFERS[code];
+            else currentAffiliateOffer = GEO_OFFERS['WORLDWIDE'] || GEO_OFFERS['default'];
+        } catch (e) { console.warn("Geo failed", e); }
+    }
+
+    // --- AFFILIATE CARD CREATOR ---
+    function createAffiliateCard() {
+        const card = document.createElement('a');
+        card.href = currentAffiliateOffer.link;
+        card.target = "_blank"; card.rel = "nofollow noopener";
+        card.className = 'match-card affiliate-card';
+        card.innerHTML = `
+            <div class="status-badge"><span>${currentAffiliateOffer.label}</span></div>
+            <img class="match-poster" src="${currentAffiliateOffer.img}" alt="${currentAffiliateOffer.alt}" loading="eager" fetchpriority="high">
+            <div class="match-info">
+                <div class="match-title">${currentAffiliateOffer.cta}</div>
+                <div class="match-meta-row"><span class="match-category">BETTING</span><span>Verified Offer</span></div>
+            </div>`;
+        return card;
+    }
 
     // --- UTILITY ---
     const formatViewers = (num) => {
@@ -102,10 +141,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 league: m.league || "",
                 teams: m.teams || {}
             }));
-        } catch (e) {
-            console.error(e);
-            return [];
-        }
+        } catch (e) { console.error(e); return []; }
     }
 
     async function fetchBackupAPI() {
@@ -137,10 +173,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
             return backupMatches;
-        } catch (e) {
-            console.error(e);
-            return [];
-        }
+        } catch (e) { console.error(e); return []; }
     }
 
     async function fetchAndUpdateViewers() {
@@ -181,6 +214,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // --- INITIALIZATION ---
     async function loadMatches() {
+        await initGeoLogic(); // Wait for Geo before rendering initial results
+
         const [primary, backup] = await Promise.all([
             fetchPrimaryAPI().catch(() => []),
             fetchBackupAPI().catch(() => [])
@@ -207,11 +242,13 @@ document.addEventListener("DOMContentLoaded", function() {
         if (query) {
             renderResults(query, elements.resultsContainer);
         } else {
-            elements.resultsTitle.textContent = "Please enter a search term.";
-            elements.resultsContainer.innerHTML = "";
+            elements.resultsTitle.textContent = "Recommended Offers";
+            // Even if no search, show affiliate card
+            elements.resultsContainer.innerHTML = '';
+            elements.resultsContainer.appendChild(createAffiliateCard());
         }
 
-        // 2. Check for 'focus=true' to open overlay immediately
+        // 2. Check for 'focus=true'
         if (params.get('focus') === 'true') {
             openOverlay();
         }
@@ -222,6 +259,10 @@ document.addEventListener("DOMContentLoaded", function() {
     // --- SEARCH LOGIC ---
     function renderResults(query, container, isOverlay = false) {
         container.innerHTML = '';
+        
+        // ALWAYS prepend affiliate card first
+        container.appendChild(createAffiliateCard());
+
         if (!query) {
             if(!isOverlay) elements.resultsTitle.textContent = "Please enter a search term.";
             return;
@@ -247,6 +288,8 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         if (filtered.length === 0) {
+            // Even if no text results, the affiliate card is already added above.
+            // Just add a text message saying "No matches"
             const noRes = document.createElement('div');
             noRes.style.gridColumn = "1/-1";
             noRes.style.textAlign = "center";
@@ -257,17 +300,12 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        // Limit results for smoother rendering on overlay, but keep enough for scrolling
         const displayList = isOverlay ? filtered.slice(0, 50) : filtered;
-
         const fragment = document.createDocumentFragment();
         
         displayList.forEach((m, index) => {
             const card = createMatchCard(m);
-            // Stagger animation delay: 0s, 0.05s, 0.1s...
-            if(isOverlay) {
-                card.style.animationDelay = `${index * 0.03}s`;
-            }
+            if(isOverlay) card.style.animationDelay = `${index * 0.03}s`;
             fragment.appendChild(card);
         });
         
@@ -360,6 +398,12 @@ document.addEventListener("DOMContentLoaded", function() {
     // --- UI EVENTS ---
     function openOverlay() {
         elements.overlay.style.display = 'flex';
+        // Instantly render affiliate card + recent searches (if any) or just card
+        // We pass "" as query so renderResults adds only the card
+        if(elements.overlayResults.children.length === 0) {
+            renderResults("", elements.overlayResults, true);
+        }
+
         requestAnimationFrame(() => {
             elements.overlay.classList.add('active');
             elements.overlayInput.focus();
