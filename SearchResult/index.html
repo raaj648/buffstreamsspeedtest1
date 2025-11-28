@@ -9,6 +9,11 @@
   <link rel="preconnect" href="https://streamed.pk" crossorigin>
   <link rel="preconnect" href="https://topembed.pw" crossorigin>
   <link rel="preconnect" href="https://corsproxy.io" crossorigin>
+  
+  <!-- Geo APIs -->
+  <link rel="preconnect" href="https://get.geojs.io" crossorigin>
+  <link rel="preconnect" href="https://api.country.is" crossorigin>
+
   <link rel="icon" href="../favicon.ico" type="image/x-icon">
   
   <style>
@@ -19,6 +24,9 @@
 
   <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="style.css"></noscript>
+
+  <!-- LCP Optimization: Preload the default affiliate image -->
+  <link rel="preload" as="image" href="../test.jpg" fetchpriority="high">
 </head>
 <body>
 
@@ -54,7 +62,7 @@
       </button>
       
       <ul class="nav-menu">
-	  <li><a href="/Schedule/?popular=true" style="color: var(--accent-secondary);">Full Schedule</a></li>
+        <li><a href="/Schedule/?popular=true" style="color: var(--accent-secondary);">Full Schedule</a></li>
         <li><a href="/Schedule/?sport=american-football">NFL</a></li>
         <li><a href="/Schedule/?sport=basketball">NBA</a></li>
         <li><a href="/Schedule/?sport=baseball">MLB</a></li>
@@ -79,21 +87,14 @@
       </div>
     </section>
 
-    <!-- Ad Unit -->
-    <a class="responsive-ad" href="https://www.villiersjets.com/?id=11429" rel="nofollow sponsored" target="_blank" aria-label="Villiers Private Jet Charter">
-      <img src="https://assets.villiersjets.com/banners/970X90-1.jpg" alt="Villiers Private Jet Charter">
-    </a>
-    <style>
-      .responsive-ad{display: block;max-width: 970px;width: 100%;margin: 20px auto;text-decoration: none;aspect-ratio: 970 / 90;overflow: hidden; background-color: #111;}
-      .responsive-ad img{width: 100%;height: 100%;object-fit: cover;display: block;border: 0;}
-    </style>
-
     <h2 id="results-title" style="text-align:center; margin-bottom: 20px;">Loading matches...</h2>
 
     <!-- Results Container -->
     <div id="search-results-container" class="results-grid">
-        <!-- Skeleton Loader -->
-        <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-content"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
+        <!-- Affiliate Placeholder (Will be replaced by JS) -->
+        <div class="skeleton-card affiliate-skeleton" style="border-color: #d4af37;"><div class="skeleton-img"></div><div class="skeleton-content"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
+        
+        <!-- Standard Skeletons -->
         <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-content"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
         <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-content"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
         <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-content"><div class="skeleton-line title"></div><div class="skeleton-line meta"></div></div></div>
@@ -113,7 +114,6 @@
       <button id="search-close">Close</button>
     </div>
     
-    <!-- Match Results in Overlay: Logic copied from your working page -->
     <div id="overlay-search-results" class="overlay-results-container"></div>
   </div>
 </div>
