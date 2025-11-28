@@ -1,9 +1,5 @@
-// =================================================================================
-// SCRIPT.JS - Match Information Page (Double API + Embedded Player Traffic)
-// =================================================================================
-
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("--- Buffstreams Match Script Started ---");
+    console.log("--- Buffstreams Match Script V14 (Optimized) ---");
 
     // ---------------------------
     // CONFIGURATION
@@ -14,6 +10,18 @@ document.addEventListener("DOMContentLoaded", () => {
         proxyUrl: 'https://corsproxy.io/?',
         watchPageBase: 'https://arkhan648.github.io/allinonewatchpage/',
         discordServerId: "1422384816472457288"
+    };
+
+    // ---------------------------
+    // GEO OFFERS CONFIGURATION
+    // ---------------------------
+    const GEO_OFFERS = {
+        'US': { img: '../test.jpg', link: 'YOUR_USA_AFFILIATE_LINK_HERE', cta: 'Claim $500 Bonus', label: 'EXCLUSIVE', alt: 'USA Exclusive Bonus' },
+        'GB': { img: '../test.jpg', link: 'YOUR_UK_AFFILIATE_LINK_HERE', cta: 'Bet £10 Get £30', label: 'UK SPECIAL', alt: 'UK Betting Offer' },
+        'CA': { img: '../test.jpg', link: 'YOUR_CANADA_AFFILIATE_LINK_HERE', cta: 'Get $200 Free Bet', label: 'BONUS', alt: 'Canada Sports Bonus' },
+        'GR': { img: '../test.jpg', link: 'YOUR_GREECE_AFFILIATE_LINK_HERE', cta: 'Claim Bonus Now', label: 'OFFER', alt: 'Greece Welcome Bonus' },
+        'WORLDWIDE': { img: '../test.jpg', link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE', cta: 'Join & Win Big', label: 'SPONSORED', alt: 'Global Sports Betting Offer' },
+        'default': { img: '../test.jpg', link: 'YOUR_GLOBAL_AFFILIATE_LINK_HERE', cta: 'Join & Win Big', label: 'SPONSORED', alt: 'Global Sports Betting Offer' }
     };
 
     // ---------------------------
@@ -29,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
         streamsSection: document.getElementById("streams-section"),
         stickyAd: document.getElementById("sticky-footer-ad"),
         closeAdBtn: document.getElementById("close-ad"),
-        // Mobile Menu Elements
         mobileToggle: document.getElementById("mobile-toggle"),
         mobileSidebar: document.getElementById("mobile-sidebar"),
         mobileOverlay: document.getElementById("mobile-overlay"),
@@ -37,14 +44,36 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ---------------------------
+    // GEO LOGIC (Same as Schedule Page)
+    // ---------------------------
+    async function initGeoLogic() {
+        try {
+            let country = null;
+            try { country = await fetch('https://get.geojs.io/v1/ip/country.json').then(r=>r.json()).then(d=>d.country); }
+            catch { try { country = await fetch('https://api.country.is').then(r=>r.json()).then(d=>d.country); } catch(e){} }
+
+            const code = country ? country.toUpperCase() : 'DEFAULT';
+            const offer = GEO_OFFERS[code] || GEO_OFFERS['WORLDWIDE'] || GEO_OFFERS['default'];
+            
+            // Update all affiliate links on page (Desktop & Mobile)
+            document.querySelectorAll('.geo-affiliate-link').forEach(el => el.href = offer.link);
+            document.querySelectorAll('.geo-affiliate-img').forEach(el => {
+                el.src = offer.img;
+                el.alt = offer.alt;
+            });
+            document.querySelectorAll('.geo-affiliate-cta').forEach(el => el.textContent = offer.cta);
+            document.querySelectorAll('.status-badge span').forEach(el => el.textContent = offer.label);
+
+        } catch (e) { console.warn("Geo failed", e); }
+    }
+
+    // ---------------------------
     // MENU & HEADER LOGIC
     // ---------------------------
-    // Sticky Header
     window.addEventListener("scroll", () => {
         if(elements.header) elements.header.classList.toggle("sticky", window.scrollY > 100);
     }, { passive: true });
 
-    // Mobile Menu Toggles
     function toggleMenu() {
         if(!elements.mobileSidebar) return;
         const isActive = elements.mobileSidebar.classList.contains('active');
@@ -58,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ---------------------------
     // HELPER FUNCTIONS
     // ---------------------------
-    
     const generateBackupId = (event) => {
         const safeMatch = (event.match || event.event || "").toLowerCase().replace(/[^a-z0-9]/g, '');
         const safeSport = (event.sport || "").toLowerCase().trim();
@@ -73,24 +101,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const decodedPart = decodeURIComponent(lastPart);
             const isGeneric = /^(ex)?\d{3,}$/.test(decodedPart) || decodedPart.length < 4 || decodedPart.includes('.php');
             return isGeneric ? `Stream Link ${index + 1}` : decodedPart.replace(/[-_]/g, ' ').toUpperCase();
-        } catch (e) {
-            return `Stream Link ${index + 1}`;
-        }
+        } catch (e) { return `Stream Link ${index + 1}`; }
     }
 
     // ---------------------------
-    // PRIMARY API RENDERERS
+    // API RENDERERS
     // ---------------------------
     function renderPrimaryStreamRow(stream, index, matchId, sourceName) {
         const row = document.createElement("a");
         row.className = "stream-row";
-        
-        // PRIMARY URL FORMAT: ?match=id/source/quality
         const quality = stream.hd ? 'hd' : 'sd';
         const streamNumber = stream.streamNo;
         const matchParam = `${matchId}/${sourceName}/${quality}${streamNumber}`;
         row.href = `${CONFIG.watchPageBase}?match=${matchParam}`;
-        
         row.target = "_blank";
         row.rel = "nofollow noopener noreferrer";
         
@@ -102,40 +125,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const languageHTML = `<div class="stream-lang"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>${stream.language || "English"}</div>`;
         const openLinkIcon = `<svg class="open-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
 
-        row.innerHTML = `
-            <div class="stream-label">
-                <span class="quality-tag ${qualityTagClass}">${qualityText}</span>
-                <span>Stream ${index + 1}</span>
-            </div>
-            <div class="stream-meta">
-                ${viewersHTML}
-                ${languageHTML}
-                ${openLinkIcon}
-            </div>`;
+        row.innerHTML = `<div class="stream-label"><span class="quality-tag ${qualityTagClass}">${qualityText}</span><span>Stream ${index + 1}</span></div><div class="stream-meta">${viewersHTML}${languageHTML}${openLinkIcon}</div>`;
         return row;
     }
 
     async function renderPrimarySource(source, matchId) {
         const sourceMeta = { alpha: "Most reliable (720p 30fps)", charlie: "Good backup", intel: "Large event coverage", admin: "Admin added streams", hotel: "Very high quality feeds", foxtrot: "Good quality", delta: "Reliable backup", echo: "Great quality overall" };
         const description = sourceMeta[source.source.toLowerCase()] || "Reliable streams";
-        
         try {
             const res = await fetch(`${CONFIG.apiPrimary}/stream/${source.source}/${source.id}`);
             if (!res.ok) return null;
             let streams = await res.json();
             if (!streams || streams.length === 0) return null;
-            
             streams.sort((a, b) => (b.hd - a.hd) || ((b.viewers || 0) - (a.viewers || 0)));
-            
             const sourceContainer = document.createElement("div");
             sourceContainer.className = "stream-source";
-            sourceContainer.innerHTML = `
-                <div class="source-header">
-                    <span class="source-name">${source.source.charAt(0).toUpperCase() + source.source.slice(1)}</span>
-                    <span class="source-count">${streams.length} streams</span>
-                </div>
-                <small class="source-desc">✨ ${description}</small>`;
-            
+            sourceContainer.innerHTML = `<div class="source-header"><span class="source-name">${source.source.charAt(0).toUpperCase() + source.source.slice(1)}</span><span class="source-count">${streams.length} streams</span></div><small class="source-desc">✨ ${description}</small>`;
             const fragment = document.createDocumentFragment();
             streams.forEach((stream, i) => fragment.appendChild(renderPrimaryStreamRow(stream, i, matchId, source.source)));
             sourceContainer.appendChild(fragment);
@@ -143,86 +148,45 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) { return null; }
     }
 
-    // ---------------------------
-    // BACKUP API RENDERERS
-    // ---------------------------
     function renderBackupSource(match, matchId) {
         const rawChannels = match.channels && (match.channels.channel || match.channels) ? (match.channels.channel || match.channels) : [];
         const channels = Array.isArray(rawChannels) ? rawChannels : [rawChannels];
         const validChannels = channels.map(c => typeof c === 'object' ? c.channel : c).filter(Boolean);
-
         if (validChannels.length === 0) return null;
-
         const sourceContainer = document.createElement("div");
         sourceContainer.className = "stream-source";
-        // Renamed to generic "Fast Streams" to blend in
-        sourceContainer.innerHTML = `
-            <div class="source-header">
-                <span class="source-name">Fast Streams</span>
-                <span class="source-count">${validChannels.length} streams</span>
-            </div>
-            <small class="source-desc">✨ High reliability connections</small>`;
-        
+        sourceContainer.innerHTML = `<div class="source-header"><span class="source-name">Fast Streams</span><span class="source-count">${validChannels.length} streams</span></div><small class="source-desc">✨ High reliability connections</small>`;
         const fragment = document.createDocumentFragment();
-        
         validChannels.forEach((url, index) => {
             const row = document.createElement("a");
             row.className = "stream-row";
-            
-            // BACKUP URL FORMAT: ?id={MATCH_ID}&stream={ENCODED_URL}
             row.href = `${CONFIG.watchPageBase}?id=${matchId}&stream=${encodeURIComponent(url)}`;
             row.target = "_blank";
             row.rel = "nofollow noopener noreferrer";
-
             const channelName = getChannelName(url, index);
             const openLinkIcon = `<svg class="open-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
-            
-            row.innerHTML = `
-                <div class="stream-label">
-                    <span class="quality-tag sd">Live</span>
-                    <span>${channelName}</span>
-                </div>
-                <div class="stream-meta">
-                    <div class="stream-lang">Player</div>
-                    ${openLinkIcon}
-                </div>`;
+            row.innerHTML = `<div class="stream-label"><span class="quality-tag sd">Live</span><span>${channelName}</span></div><div class="stream-meta"><div class="stream-lang">Player</div>${openLinkIcon}</div>`;
             fragment.appendChild(row);
         });
-
         sourceContainer.appendChild(fragment);
         return sourceContainer;
     }
 
     // ---------------------------
-    // CORE LOGIC: DOUBLE API LOAD
+    // CORE LOADING LOGIC
     // ---------------------------
     async function loadMatchDetails() {
         const urlParams = new URLSearchParams(window.location.search);
         const matchId = urlParams.get("id");
-        
-        if (!matchId) { 
-            elements.title.innerHTML = "Error: Match ID not provided."; 
-            return; 
-        }
+        if (!matchId) { elements.title.innerHTML = "Error: Match ID not provided."; return; }
 
         elements.streamsContainer.innerHTML = "";
-        
-        // Header Buttons
         const skeletonHeader = elements.streamsSection.querySelector('.skeleton-header');
         if (skeletonHeader) {
-            const headerHTML = `
-                <button id="back-button" class="back-button-styled">
-                    <span>&lt;-</span><span class="separator">•</span><span>Back to Schedule</span>
-                </button>
-                <div id="sources-summary">Loading available streams...</div>
-            `;
+            // Button Removed, only summary text remains
             const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = headerHTML;
+            tempDiv.innerHTML = `<div id="sources-summary">Loading available streams...</div>`;
             skeletonHeader.replaceWith(...tempDiv.childNodes);
-            
-            document.getElementById("back-button").addEventListener("click", () => {
-                 window.location.href = '../Schedule/?popular=true';
-            });
         }
 
         // 1. PRIMARY API
@@ -231,14 +195,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (res.ok) {
                 const allMatches = await res.json();
                 const match = allMatches.find(m => String(m.id) === String(matchId));
-                
                 if (match) {
                     updatePageMetadata(match.title, match.date);
                     if (match.sources && match.sources.length > 0) {
                         renderSources(match.sources.map(s => renderPrimarySource(s, match.id)));
-                    } else {
-                        renderNoStreams();
-                    }
+                    } else { renderNoStreams(); }
                     return; 
                 }
             }
@@ -250,7 +211,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch(url);
             if (!res.ok) throw new Error("Backup API Error");
             const data = await res.json();
-            
             let backupMatch = null;
             if (data && data.events) {
                 for (const dateStr in data.events) {
@@ -264,38 +224,33 @@ document.addEventListener("DOMContentLoaded", () => {
                     if(backupMatch) break;
                 }
             }
-
             if (backupMatch) {
                 const title = (backupMatch.match || backupMatch.event || "Unknown").replace(/ vs /i, ' v ');
                 const date = (parseInt(backupMatch.unix_timestamp) * 1000);
                 updatePageMetadata(title, date);
-                
                 const backupSourceEl = renderBackupSource(backupMatch, matchId);
                 if(backupSourceEl) {
                     const sourcesSummaryEl = document.getElementById('sources-summary');
                     if (sourcesSummaryEl) sourcesSummaryEl.textContent = `Showing available streams`;
                     elements.streamsContainer.appendChild(backupSourceEl);
-                } else {
-                    renderNoStreams();
-                }
+                } else { renderNoStreams(); }
                 return;
             }
-
         } catch (error) { console.error("Backup API failed:", error); }
 
-        // FAILURE
         elements.title.textContent = "Match Not Found";
-        elements.description.textContent = "The match you are looking for could not be found. It may have been removed or finished.";
+        elements.description.textContent = "The match you are looking for could not be found.";
         elements.streamsContainer.innerHTML = '';
         const summary = document.getElementById('sources-summary');
         if(summary) summary.textContent = "Error";
     }
 
     function updatePageMetadata(title, dateTimestamp) {
-        const fullTitle = `${title} Live Stream Links`;
-        document.title = fullTitle;
-        elements.title.textContent = fullTitle;
-        elements.description.textContent = `To watch ${title} streams, scroll down and choose a stream link. If no links appear, the event may not be live yet.`;
+        // Optimized Title Format: Buffstreams.world Team A Vs Team B Live Streaming
+        const pageTitle = `Buffstreams.world ${title} Live Streaming`;
+        document.title = pageTitle;
+        elements.title.textContent = pageTitle;
+        elements.description.textContent = `Watch ${title} live. Scroll down to choose a stream link.`;
 
         if (dateTimestamp > Date.now()) {
             elements.countdown.classList.remove("hidden");
@@ -321,20 +276,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const sourceElements = (await Promise.all(promiseArray)).filter(Boolean);
         const totalSources = sourceElements.length;
         const sourcesSummaryEl = document.getElementById('sources-summary');
-
-        if (totalSources === 0) {
-            renderNoStreams();
-            return;
-        }
-
+        if (totalSources === 0) { renderNoStreams(); return; }
         const INITIAL_SOURCES_TO_SHOW = 4;
         if (sourcesSummaryEl) sourcesSummaryEl.textContent = `Found ${totalSources} sources • Showing top recommendations`;
-        
         sourceElements.forEach((el, index) => {
             if (index >= INITIAL_SOURCES_TO_SHOW) el.classList.add('hidden-source');
             elements.streamsContainer.appendChild(el);
         });
-
         if (totalSources > INITIAL_SOURCES_TO_SHOW) {
             const remainingCount = totalSources - INITIAL_SOURCES_TO_SHOW;
             elements.showAllBtn.textContent = `Show ${remainingCount} more sources ⌄`;
@@ -359,7 +307,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const membersListEl = document.getElementById("discord-members-list");
         const joinButton = document.getElementById("discord-join-button");
         const widgetContainer = document.getElementById("discord-widget-container");
-
         if (!widgetContainer) return;
 
         try {
@@ -368,20 +315,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
             onlineCountEl.textContent = data.presence_count || '0';
             if (data.instant_invite && joinButton) joinButton.href = data.instant_invite;
-
             membersListEl.innerHTML = ''; 
             const fragment = document.createDocumentFragment();
+            // Reduced to 5 members to fit sticky sidebar
             if (data.members && data.members.length > 0) {
-                data.members.slice(0, 10).forEach(member => {
+                data.members.slice(0, 5).forEach(member => {
                     const li = document.createElement('li');
                     li.innerHTML = `<div class="member-avatar"><img src="${member.avatar_url}" alt="${member.username}"><span class="online-indicator"></span></div><span class="member-name">${member.username}</span>`;
                     fragment.appendChild(li);
                 });
             } else {
-                const li = document.createElement('li');
-                li.textContent = "No members online";
-                li.style.color = "#8b949e";
-                fragment.appendChild(li);
+                fragment.appendChild(document.createElement('li')).textContent = "No members online";
             }
             if (data.instant_invite) {
                 const moreLi = document.createElement('div');
@@ -397,11 +341,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (elements.closeAdBtn && elements.stickyAd) {
-        elements.closeAdBtn.addEventListener("click", () => { 
-            elements.stickyAd.style.display = "none"; 
-        });
+        elements.closeAdBtn.addEventListener("click", () => { elements.stickyAd.style.display = "none"; });
     }
 
+    initGeoLogic(); // Init GEO
     loadMatchDetails();
     loadDiscordWidget();
 });
