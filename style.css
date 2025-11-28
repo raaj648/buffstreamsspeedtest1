@@ -31,6 +31,28 @@ main{display:block}
     /* REMOVED: transform & animation properties */
 }
 
+.mobile-sidebar { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 280px; 
+    height: 100vh; 
+    background: var(--bg-primary); 
+    border-right: 1px solid var(--border-color); 
+    transform: translateX(-100%); 
+    /* ADDED: Transition for smooth sliding animation */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    z-index: 2000; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+/* ADDED: This is the missing rule that makes the menu visible */
+.mobile-sidebar.active { 
+    transform: translateX(0); 
+}
+
 /* Mobile Sidebar Styling */
 .mobile-nav-list { list-style: none; padding: 0; margin: 20px 0; }
 .mobile-nav-list li { margin-bottom: 5px; }
@@ -187,3 +209,4 @@ footer p{padding-bottom:30px}
   .category-card .live-badge{right:8px;}
   .category-card .count-badge{left:8px; max-width: 80px;}
 }
+
