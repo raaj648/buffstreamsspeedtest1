@@ -3,11 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loading Match...</title>
+  <title>Loading Match... | Buffstreams.world</title>
+  <meta name="description" content="Watch live sports streams in HD. Football, Basketball, UFC, NFL and more on Buffstreams.world.">
   
   <link rel="preconnect" href="https://streamed.pk" crossorigin>
   <link rel="preconnect" href="https://topembed.pw" crossorigin>
   <link rel="preconnect" href="https://corsproxy.io" crossorigin>
+  
+  <!-- Geo APIs -->
+  <link rel="preconnect" href="https://get.geojs.io" crossorigin>
+  <link rel="preconnect" href="https://api.country.is" crossorigin>
+
   <link rel="icon" href="../favicon.ico" type="image/x-icon">
 
   <!-- CSS Loading -->
@@ -30,7 +36,7 @@
 <aside class="mobile-sidebar" id="mobile-sidebar">
   <div class="sidebar-header">
     <span style="font-weight: 800; font-size: 1.2rem; color: #fff;">Menu</span>
-    <button id="close-sidebar" style="background:none; border:none; color: #8b949e; cursor: pointer;">
+    <button id="close-sidebar" aria-label="Close Menu" style="background:none; border:none; color: #8b949e; cursor: pointer;">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </button>
   </div>
@@ -49,7 +55,6 @@
 
 <!-- Main Header -->
 <header class="main-header">
-  <!-- FIXED: Added 'content-container' class here so header width matches body width -->
   <div class="content-container header-inner">
     <div class="nav-left">
       <button class="mobile-toggle" id="mobile-toggle" aria-label="Open Menu">
@@ -76,22 +81,18 @@
     
     <main class="match-details-container">
       
-      
+      <!-- ADSTERRA BANNER: TOP (Above Title) -->
+      <div class="adsterra-section">
+        <div class="ad-label">Sponsored Partner</div>
+        <div class="ad-frame">
+             
+        </div>
+      </div>
 
-      <!-- SKELETON LOADER FOR PAGE CONTENT -->
+      <!-- PAGE TITLE -->
       <div id="match-header">
         <h1 id="match-title"><div class="skeleton"></div></h1>
       </div>
-
-      <!-- Adsterra Banner Advertisement -->
-      <center>
-        <div style="margin: 15px 0;">
-        <script type="text/javascript">
-          atOptions = { 'key' : 'd1173322baca5eadaaa9df8755945d20', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };
-        </script>
-        <script type="text/javascript" src="//www.highperformanceformat.com/d1173322baca5eadaaa9df8755945d20/invoke.js"></script>
-        </div>
-      </center>
       
       <p id="match-description">
         <span class="skeleton"></span>
@@ -99,10 +100,21 @@
       </p>
       
       <div id="countdown-section" class="countdown hidden"></div>
+
+      <!-- MOBILE ONLY AFFILIATE AD (Above Sources) -->
+      <div class="mobile-affiliate-wrapper">
+          <a href="#" target="_blank" rel="nofollow noopener" class="match-card affiliate-card geo-affiliate-link" aria-label="Sponsored Offer">
+            <div class="status-badge"><span>SPONSORED</span></div>
+            <img class="match-poster geo-affiliate-img" src="../test.jpg" width="444" height="250" alt="Exclusive Offer" loading="eager">
+            <div class="match-info">
+                <div class="match-title geo-affiliate-cta" style="color:#d4af37;">Join & Win Big</div>
+                <div class="match-meta-row"><span class="match-category">BETTING</span><span>Verified Offer</span></div>
+            </div>
+          </a>
+      </div>
       
       <section id="streams-section">
         <div class="skeleton-header">
-          <div class="skeleton-button"></div>
           <div class="skeleton-summary"></div>
         </div>
         
@@ -123,30 +135,44 @@
       </section>
     </main>
 
-    <!-- DISCORD WIDGET SIDEBAR -->
-    <aside class="discord-sidebar">
+    <!-- RIGHT SIDEBAR (Sticky Wrapper for Ad + Discord) -->
+    <aside class="right-sidebar-wrapper">
+      
+      <!-- DESKTOP AFFILIATE AD -->
+      <div class="desktop-affiliate-wrapper">
+          <a href="#" target="_blank" rel="nofollow noopener" class="match-card affiliate-card geo-affiliate-link" aria-label="Sponsored Offer">
+            <div class="status-badge"><span>SPONSORED</span></div>
+            <img class="match-poster geo-affiliate-img" src="../test.jpg" width="444" height="250" alt="Exclusive Offer" loading="eager">
+            <div class="match-info">
+                <div class="match-title geo-affiliate-cta" style="color:#d4af37;">Join & Win Big</div>
+                <div class="match-meta-row"><span class="match-category">BETTING</span><span>Verified Offer</span></div>
+            </div>
+          </a>
+      </div>
+
+      <!-- DISCORD WIDGET -->
       <div id="discord-widget-container">
         <div class="discord-header">
             <div class="header-text">
                 <h3>Join our <span>Discord!</span></h3>
                 <p><span id="discord-online-count">...</span> online members</p>
             </div>
-            <a href="#" id="discord-join-button" class="discord-btn" target="_blank" rel="noopener noreferrer">Join Now</a>
+            <a href="#" id="discord-join-button" class="discord-btn" target="_blank" rel="noopener noreferrer">Join</a>
         </div>
         <ul id="discord-members-list" class="members-list">
-            <li class="member-skeleton"><div class="avatar-skeleton"></div><div class="name-skeleton"></div></li>
             <li class="member-skeleton"><div class="avatar-skeleton"></div><div class="name-skeleton"></div></li>
             <li class="member-skeleton"><div class="avatar-skeleton"></div><div class="name-skeleton"></div></li>
         </ul>
       </div>
     </aside>
+
   </div>
 </div>
 
 <!-- Footer -->
 <footer>
   <div class="disclaimer-box">
-    <h3>Disclaimer</h3>
+    <h3>DMCA Notice</h3>
     <p>
       Buffstreams functions as a search engine. We do not host, archive, store, or distribute media files. 
       All content is provided by non-affiliated third parties.
@@ -164,7 +190,7 @@
   <p>© 2025 buffstreams.world. All rights reserved.</p>
 </footer>
 
-<!-- Sticky Ad Placeholder -->
+<!-- Sticky Footer Ad Placeholder -->
 <div id="sticky-ad-placeholder">
   <div id="sticky-footer-ad">
     <!-- Mobile Content -->
@@ -185,5 +211,4 @@
 
 <script src="script.js" defer></script>
 </body>
-
 </html>
