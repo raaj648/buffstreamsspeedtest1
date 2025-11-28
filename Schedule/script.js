@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let currentFilters = { live: false, popular: false, sport: 'all' };
     
     const GEO_OFFERS = {
-        'US': { img: '../test.jpg', link: 'YOUR_USA_AFFILIATE_LINK_HERE', cta: 'Claim $500 Bonus', label: 'EXCLUSIVE', alt: 'USA Exclusive Bonus' },
+        'US': { img: '/Images/webpartnarsUSA.webp', link: 'https://record.webpartners.co/_QUm2k2WIfIruiHimTOg2YWNd7ZgqdRLk/1/', cta: 'Claim Up To $2000', label: 'EXCLUSIVE', alt: 'USA Exclusive Bonus' },
         'GB': { img: '../test.jpg', link: 'YOUR_UK_AFFILIATE_LINK_HERE', cta: 'Bet £10 Get £30', label: 'UK SPECIAL', alt: 'UK Betting Offer' },
         'CA': { img: '../test.jpg', link: 'YOUR_CANADA_AFFILIATE_LINK_HERE', cta: 'Get $200 Free Bet', label: 'BONUS', alt: 'Canada Sports Bonus' },
         'GR': { img: '../test.jpg', link: 'YOUR_GREECE_AFFILIATE_LINK_HERE', cta: 'Claim Bonus Now', label: 'OFFER', alt: 'Greece Welcome Bonus' },
@@ -673,3 +673,4 @@ document.addEventListener("DOMContentLoaded", function() {
 
     initApp();
 });
+
